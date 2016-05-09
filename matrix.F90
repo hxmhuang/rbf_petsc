@@ -295,43 +295,6 @@ subroutine mat_diag(A,ierr)
 end subroutine
 
 
-subroutine mat_veccreate(v,m,ierr)
-	implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscvec.h90>
-	PetscInt,		intent(in)	::	m	
-	Vec,			intent(out)	::	v
-	PetscErrorCode,	intent(out)	::	ierr
-	! generate vector v with size m
-	call VecCreate(PETSC_COMM_WORLD,v,ierr)
-	call VecSetSizes(v,PETSC_DECIDE,m,ierr)
-	call VecSetFromOptions(v,ierr)
-end subroutine
-
-subroutine mat_vecduplicate(v1,v2,ierr)
-	implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscvec.h90>
-	Vec,		intent(in)	::	v1	
-	Vec,			intent(out)	::	v2
-	PetscErrorCode,	intent(out)	::	ierr
-	! duplicate vector v2 using v1
-	call VecDuplicate(v1,v2,ierr)
-end subroutine
-
-subroutine mat_vecdestroy(v,ierr)
-	implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscvec.h90>
-	Vec,			intent(in)	::	v
-	PetscErrorCode,	intent(out)	::	ierr
-	! destroy vector v
-	call VecDestroy(v,ierr)
-end subroutine
-
 subroutine mat_create(A,m,n,ierr)
 	implicit none
 #include <petsc/finclude/petscsys.h>
@@ -369,7 +332,7 @@ subroutine mat_destroy(A,ierr)
 #include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscvec.h90>
 #include <petsc/finclude/petscmat.h>
-	Mat,			intent(inout)	::	A
+	Mat,			intent(in)	::	A
 	PetscErrorCode,	intent(out)	::	ierr
 	! destroy matrix A
 	call MatDestroy(A,ierr)
@@ -389,16 +352,54 @@ subroutine mat_view(A,ierr)
 end subroutine
 
 
-subroutine mat_vecview(v,ierr)
+! -----------------------------------------------------------------------
+! The mat_hjoin function is used to combine two matrixs into one matrix along with x direction 
+! -----------------------------------------------------------------------
+subroutine mat_hjoin(A1,A2,B,ierr)
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscvec.h90>
 #include <petsc/finclude/petscmat.h>
-	Vec,			intent(in)	::	v
+	Mat,			intent(in)	::  A1,A2 
+	Mat,			intent(out)	::	B
 	PetscErrorCode,	intent(out)	::	ierr
-	! veiw vec A
-	call VecView(v,PETSC_VIEWER_STDOUT_WORLD,ierr)
+	PetscInt					::	nrow1,ncol1,nrow2,ncol2
+	PetscInt,allocatable		::	idxn(:)
+	PetscScalar,allocatable		::	row1(:),row2(:),results(:)
+	PetscInt					::  ista,iend
+	integer						::	i,j
+
+	call MatGetSize(A1,nrow1,ncol1,ierr)
+	call MatGetSize(A2,nrow2,ncol2,ierr)
+	if(nrow1/=nrow2)then
+		print *, "Error: Matrix A1 and Matrix A2 should have the same row size"
+		stop	
+	endif
+
+	call MatGetOwnershipRange(A1,ista,iend,ierr)
+	!print *,">istat=",ista,"iend=",iend
+
+	allocate(idxn(ncol1+ncol2),row1(ncol1),row2(ncol2),results(ncol1+ncol2))
+
+	do i=ista,iend-1
+		call MatGetRow(A1,i,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,row1,ierr)
+		call MatRestoreRow(A1,i,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,row1,ierr)
+		call MatGetRow(A2,i,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,row2,ierr)
+		call MatRestoreRow(A2,i,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,row2,ierr)
+		do j=1,(ncol1+ncol2)
+			idxn(j)=j-1
+		enddo
+		results(1:ncol1) = row1
+		results((ncol1+1):(ncol1+ncol2)) = row2
+		!print *,">i=",i,"results=",results
+		call MatSetValues(B,1,i,(ncol1+ncol2),idxn,results,INSERT_VALUES,ierr)
+	enddo
+
+	call MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY,ierr)
+	call MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY,ierr)
+
+	deallocate(idxn,row1,row2,results)
 end subroutine
 
 

@@ -18,7 +18,7 @@ program test
 	! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	!KSP				ksp
 	!PC				pc
-	Mat				A,dsites,ctrs
+	Mat				A,A1,A2,B,dsites,ctrs
 	!PetscReal		error
 	PetscMPIInt		myrank,mysize
 	PetscErrorCode	ierr
@@ -48,9 +48,6 @@ program test
 	call mat_eprod(dsites,dsites,A,ierr)
 	call mat_view(A,ierr)
 	call mat_destroy(A,ierr)	
-	
-	call mat_destroy(dsites,ierr)	
-	call mat_destroy(ctrs,ierr)	
 
 	print *, "==============mat_ones==============="
 	!call mat_ones(ctrs,6,6,ierr)
@@ -71,14 +68,36 @@ program test
 	call mat_diag(A,ierr)	
 	call mat_view(A,ierr)
 	call mat_destroy(A,ierr)	
+	
+	print *, "==============mat_copy==============="
+	call mat_create(ctrs,m*n,2,ierr)
+	call mat_copy(dsites,ctrs,ierr)
+	call mat_view(ctrs,ierr)
+	call mat_destroy(ctrs,ierr)
 
+	print *, "==============mat_hjoin1==============="
+	call mat_create(A,m*n,4,ierr)
+	call mat_hjoin(dsites,dsites,A,ierr)
+	call mat_view(A,ierr)
+	call mat_destroy(dsites,ierr)
+	call mat_destroy(A,ierr)	
+	
+	print *, "==============mat_hjoin2==============="
+	call mat_create(A1,3,5,ierr)
+	call mat_create(A2,3,3,ierr)
+	call mat_create(B,3,8,ierr)
+	call mat_zeros(A1,ierr)
+	call mat_diag(A2,ierr)
+	call mat_hjoin(A1,A2,B,ierr)
+	call mat_view(B,ierr)
+	call mat_destroy(A1,ierr)	
+	call mat_destroy(A2,ierr)	
+	call mat_destroy(B,ierr)	
+	
 	print *, "============================="
 	!call mat_repmat(dsites,2,2,ctrs,ierr)
 	!call mat_repmat(dsites,2,2,ctrs,ierr)
 
-	call mat_destroy(A,ierr)
-	call mat_destroy(dsites,ierr)
-	call mat_destroy(ctrs,ierr)
 	call PetscFinalize(ierr)
 
 end program
