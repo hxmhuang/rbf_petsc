@@ -2,6 +2,7 @@
 ! Implementing the rbf_interpolation2D with the ASM preconditioner
 ! -----------------------------------------------------------------------
 program main
+	use matrixalgebra
 	use particle 
 	implicit none
 
@@ -54,18 +55,18 @@ program main
 	call MatCreate(PETSC_COMM_WORLD,A,ierr);
 	call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,M,ierr)
 	call MatSetFromOptions(A,ierr)
-    call MatSetUp(A,ierr)
-	
+	call MatSetUp(A,ierr)
+
 	! generate the sample points
 	! call createpoints(npoints,xdim,ydim,rhs,ierr)
 	call generatepoints(npoints,dsites,rhs,ierr)
-	
+
 	call MatDuplicate(dsites,MAT_COPY_VALUES,ctrs,ierr)
-  
-	!call ma_repmat(dsites,2,2,ctrs,ierr)
+
+	call ma_repmat(dsites,2,2,ctrs,ierr)
 
 	call ma_eprod(dsites,dsites,ctrs,ierr)
-	
+
 	call VecDestroy(x,ierr)
 	call VecDestroy(b,ierr)
 	call VecDestroy(u,ierr)
@@ -73,6 +74,5 @@ program main
 	call MatDestroy(dsites,ierr)
 	call MatDestroy(ctrs,ierr)
 	call PetscFinalize(ierr)
-
 
 end program
