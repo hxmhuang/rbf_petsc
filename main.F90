@@ -2,8 +2,9 @@
 ! Implementing the rbf_interpolation2D with the ASM preconditioner
 ! -----------------------------------------------------------------------
 program main
-	use matrixalgebra
-	use particle 
+	use matrix
+	use vector 
+	use rbf 
 	implicit none
 
 #include <petsc/finclude/petscsys.h>
@@ -41,33 +42,30 @@ program main
 	call MPI_Comm_rank(PETSC_COMM_WORLD,mysize,ierr)
 
 	! generate some vectors: x,b,u
-	call ma_veccreate(x,m*n,ierr)
-	call ma_vecduplicate(x,b,ierr)
-	call ma_vecduplicate(x,u,ierr)
-	call ma_vecduplicate(x,rhs,ierr)
+	call vec_create(x,m*n,ierr)
+	call vec_duplicate(x,b,ierr)
+	call vec_duplicate(x,u,ierr)
+	call vec_duplicate(x,rhs,ierr)
 
 	! generate matrix A with size M*M
-	call ma_matcreate(A,m*n,m*n,ierr)
+	call mat_create(A,m*n,m*n,ierr)
 
-	! generate the sample points
-	!call ma_matcreate(dsites,M,2,ierr)
-	!call createpoints(dsites,npoints,npoints,ierr)
 	
 	print *, "==============createpoints & testfunctionD==============="
-	call ma_matcreate(dsites,m*n,2,ierr)
-	call createpoints(dsites,m,n,ierr)
-	call testfunctionD(dsites,rhs,ierr)
-	call ma_matview(dsites,ierr)
-	call ma_vecview(rhs,ierr)
-	call ma_matcopy(dsites,ctrs,ierr)
+	call mat_create(dsites,m*n,2,ierr)
+	call rbf_createpoints(dsites,m,n,ierr)
+	call rbf_testfunctionD(dsites,rhs,ierr)
+	call mat_view(dsites,ierr)
+	call vec_view(rhs,ierr)
+	call mat_copy(dsites,ctrs,ierr)
 
-	call ma_vecdestroy(x,ierr)
-	call ma_vecdestroy(b,ierr)
-	call ma_vecdestroy(u,ierr)
-	call ma_vecdestroy(rhs,ierr)
-	call ma_matdestroy(a,ierr)
-	call ma_matdestroy(dsites,ierr)
-	call ma_matdestroy(ctrs,ierr)
+	call vec_destroy(x,ierr)
+	call vec_destroy(b,ierr)
+	call vec_destroy(u,ierr)
+	call vec_destroy(rhs,ierr)
+	call mat_destroy(a,ierr)
+	call mat_destroy(dsites,ierr)
+	call mat_destroy(ctrs,ierr)
 	call PetscFinalize(ierr)
 
 end program

@@ -6,8 +6,9 @@ LOCDIR           = src/ksp/ksp/examples/tutorials/
 MANSEC           = KSP
 CLEANFILES       = main test *.o *.mod 
 NP               = 1
-OBJMAIN			 = matrixalgebra.o particle.o main.o 
-OBJTEST			 = matrixalgebra.o particle.o test.o 
+OBJ				 = matrix.o vector.o rbf.o  
+OBJMAIN			 = ${OBJ} main.o 
+OBJTEST			 = ${OBJ} test.o 
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

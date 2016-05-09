@@ -4,11 +4,11 @@
 #include <petsc/finclude/petscsysdef.h>
 #include <petsc/finclude/petscvecdef.h>
 
-module matrixalgebra
+module matrix
 
 contains
 
-subroutine ma_repmat(A,m,n,B,ierr)
+subroutine mat_rep(A,m,n,B,ierr)
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
@@ -46,7 +46,7 @@ end subroutine
 ! with m times in row and n times in column. The name of this function is
 ! refered from MATLAB. 
 ! -----------------------------------------------------------------------
-subroutine ma_repmat1(orgM,m,n,newM,ierr)
+subroutine mat_repmat1(orgM,m,n,newM,ierr)
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
@@ -110,7 +110,7 @@ end subroutine
 ! The eprod function in matrix algebra library is used to implement the
 ! puoduct of elements with the same positions in two matrixs. 
 ! -----------------------------------------------------------------------
-subroutine ma_eprod(A1,A2,B,ierr)
+subroutine mat_eprod(A1,A2,B,ierr)
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
@@ -160,7 +160,7 @@ end subroutine
 ! Sum the elements in a matrix along with the row or column 
 ! -----------------------------------------------------------------------
 
-subroutine ma_sum(A,dims,B,ierr)
+subroutine mat_sum(A,dims,B,ierr)
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
@@ -183,7 +183,7 @@ subroutine ma_sum(A,dims,B,ierr)
 end subroutine
 
 
-subroutine ma_ones(A,ierr)
+subroutine mat_ones(A,ierr)
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
@@ -219,7 +219,7 @@ subroutine ma_ones(A,ierr)
 	deallocate(idxn,row,results)
 end subroutine
 
-subroutine ma_zeros(A,ierr)
+subroutine mat_zeros(A,ierr)
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
@@ -254,7 +254,7 @@ subroutine ma_zeros(A,ierr)
 end subroutine
 
 
-subroutine ma_diag(A,ierr)
+subroutine mat_diag(A,ierr)
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
@@ -295,7 +295,7 @@ subroutine ma_diag(A,ierr)
 end subroutine
 
 
-subroutine ma_veccreate(v,m,ierr)
+subroutine mat_veccreate(v,m,ierr)
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
@@ -309,7 +309,7 @@ subroutine ma_veccreate(v,m,ierr)
 	call VecSetFromOptions(v,ierr)
 end subroutine
 
-subroutine ma_vecduplicate(v1,v2,ierr)
+subroutine mat_vecduplicate(v1,v2,ierr)
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
@@ -321,7 +321,7 @@ subroutine ma_vecduplicate(v1,v2,ierr)
 	call VecDuplicate(v1,v2,ierr)
 end subroutine
 
-subroutine ma_vecdestroy(v,ierr)
+subroutine mat_vecdestroy(v,ierr)
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
@@ -332,7 +332,7 @@ subroutine ma_vecdestroy(v,ierr)
 	call VecDestroy(v,ierr)
 end subroutine
 
-subroutine ma_matcreate(A,m,n,ierr)
+subroutine mat_create(A,m,n,ierr)
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
@@ -349,7 +349,7 @@ subroutine ma_matcreate(A,m,n,ierr)
 end subroutine
 
 
-subroutine ma_matcopy(A,B,ierr)
+subroutine mat_copy(A,B,ierr)
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
@@ -363,7 +363,7 @@ subroutine ma_matcopy(A,B,ierr)
 end subroutine
 
 
-subroutine ma_matdestroy(A,ierr)
+subroutine mat_destroy(A,ierr)
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
@@ -376,7 +376,7 @@ subroutine ma_matdestroy(A,ierr)
 end subroutine
 
 
-subroutine ma_matview(A,ierr)
+subroutine mat_view(A,ierr)
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
@@ -389,7 +389,7 @@ subroutine ma_matview(A,ierr)
 end subroutine
 
 
-subroutine ma_vecview(v,ierr)
+subroutine mat_vecview(v,ierr)
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>

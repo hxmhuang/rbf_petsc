@@ -1,7 +1,7 @@
 #include <petsc/finclude/petscsysdef.h>
 #include <petsc/finclude/petscvecdef.h>
 
-module particle 
+module	rbf 
 	type MyStruct
 	sequence
 	PetscScalar :: a,b,c
@@ -15,7 +15,7 @@ contains
 ! m: there are m points in x direction 
 ! n: there are n points in y direction 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-subroutine createpoints(A,m,n,ierr)
+subroutine rbf_createpoints(A,m,n,ierr)
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
@@ -51,7 +51,7 @@ subroutine createpoints(A,m,n,ierr)
 end subroutine
 
 
-subroutine testfunctionD(A,v,ierr)
+subroutine rbf_testfunctionD(A,v,ierr)
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
@@ -101,7 +101,7 @@ subroutine testfunction(xcord,ycord,res)
 end subroutine
 
 
-subroutine distancematrix(dsites,ctrs,dm)
+subroutine rbf_distancematrix(dsites,ctrs,dm)
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
