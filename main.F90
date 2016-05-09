@@ -18,17 +18,19 @@ program main
 	!KSP				ksp
 	!PC				pc
 	Mat				A,Tmp,dsites,ctrs
-	Vec				u,x,b,xdim,ydim,rhs
+	Vec				u,x,b,rhs
 	!PetscReal		error
 	PetscMPIInt		myrank,mysize
 	PetscErrorCode	ierr
 	PetscReal		ep
-	PetscInt		npoints,neval,M,N
+	PetscInt		meval,neval,m,n
 	!PetscInt rstart,rend,r;
 	!integer i
 
 	ep=4.1
-	npoints=3
+	m=3
+	n=3
+	meval=30
 	neval=30
 	! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	!                 Beginning of program
@@ -38,50 +40,68 @@ program main
 	call MPI_Comm_rank(PETSC_COMM_WORLD,myrank,ierr)
 	call MPI_Comm_rank(PETSC_COMM_WORLD,mysize,ierr)
 
-	M=npoints*npoints
-	N=neval*neval
-
 	! generate some vectors: x,b,u
-	call VecCreate(PETSC_COMM_WORLD,x,ierr)
-	call VecSetSizes(x,PETSC_DECIDE,M,ierr)
-	call VecSetFromOptions(x,ierr)
-	call VecDuplicate(x,b,ierr)
-	call VecDuplicate(x,u,ierr)
-	call VecDuplicate(x,xdim,ierr)
-	call VecDuplicate(x,ydim,ierr)
-	call VecDuplicate(x,rhs,ierr)
+	call ma_veccreate(x,m*n,ierr)
+	call ma_vecduplicate(x,b,ierr)
+	call ma_vecduplicate(x,u,ierr)
+	call ma_vecduplicate(x,rhs,ierr)
 
 	! generate matrix A with size M*M
-	call MatCreate(PETSC_COMM_WORLD,A,ierr);
-	call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,M,ierr)
-	call MatSetFromOptions(A,ierr)
-	call MatSetUp(A,ierr)
+	call ma_matcreate(A,m*n,m*n,ierr)
 
 	! generate the sample points
-	! call createpoints(npoints,xdim,ydim,rhs,ierr)
-	call generatepoints(npoints,dsites,rhs,ierr)
-
-	call MatDuplicate(dsites,MAT_COPY_VALUES,ctrs,ierr)
-
-	print *, "============================="
-	call ma_eprod(dsites,dsites,ctrs,ierr)
-
-	print *, "============================="
-	call ma_ones(ctrs,6,6,ierr)
+	!call ma_matcreate(dsites,M,2,ierr)
+	!call createpoints(dsites,npoints,npoints,ierr)
 	
-	print *, "============================="
-	call ma_zeros(ctrs,4,4,ierr)
+	print *, "==============createpoints & testfunctionD==============="
+	call ma_matcreate(dsites,m*n,2,ierr)
+	call createpoints(dsites,m,n,ierr)
+	call testfunctionD(dsites,rhs,ierr)
+	call ma_matview(dsites,ierr)
+	call ma_vecview(rhs,ierr)
+	call ma_matcopy(dsites,ctrs,ierr)
 	
-	print *, "============================="
+	print *, "==============ma_eprod==============="
+	call ma_matcreate(Tmp,m*n,2,ierr)
+	call ma_eprod(dsites,dsites,Tmp,ierr)
+	call ma_matview(Tmp,ierr)
+	call ma_matdestroy(Tmp,ierr)	
 	
+	call ma_matdestroy(dsites,ierr)	
+	call ma_matdestroy(ctrs,ierr)	
+
+	print *, "==============ma_ones==============="
+	!call ma_ones(ctrs,6,6,ierr)
+	call ma_matcreate(Tmp,6,5,ierr)
+	call ma_ones(Tmp,ierr)
+	call ma_matview(Tmp,ierr)
+	call ma_matdestroy(Tmp,ierr)	
+
+	!call MatView(ctrs,PETSC_VIEWER_STDOUT_WORLD,ierr)
+	print *, "==============ma_zeros==============="
+	call ma_matcreate(Tmp,5,6,ierr)
+	call ma_zeros(Tmp,ierr)
+	call ma_matview(Tmp,ierr)
+	call ma_matdestroy(Tmp,ierr)	
+
+	print *, "==============ma_diag==============="
+	call ma_matcreate(Tmp,4,4,ierr)
+	call ma_diag(Tmp,ierr)	
+	call ma_matview(Tmp,ierr)
+	call ma_matdestroy(Tmp,ierr)	
+
+	print *, "============================="
 	!call ma_repmat(dsites,2,2,ctrs,ierr)
-	
-	call VecDestroy(x,ierr)
-	call VecDestroy(b,ierr)
-	call VecDestroy(u,ierr)
-	call VecDestroy(rhs,ierr)
-	call MatDestroy(dsites,ierr)
-	call MatDestroy(ctrs,ierr)
+	!call ma_repmat(dsites,2,2,ctrs,ierr)
+
+	call ma_vecdestroy(x,ierr)
+	call ma_vecdestroy(b,ierr)
+	call ma_vecdestroy(u,ierr)
+	call ma_vecdestroy(rhs,ierr)
+	call ma_matdestroy(a,ierr)
+	call ma_matdestroy(dsites,ierr)
+	call ma_matdestroy(ctrs,ierr)
+	call ma_matdestroy(tmp,ierr)
 	call PetscFinalize(ierr)
 
 end program

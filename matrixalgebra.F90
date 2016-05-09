@@ -8,6 +8,39 @@ module matrixalgebra
 
 contains
 
+subroutine ma_repmat(A,m,n,B,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+	
+	Mat,			intent(in)	::  A 
+	PetscInt,		intent(in)	::	m,n
+	Mat,			intent(out)	::	B	
+	PetscErrorCode,	intent(out)	::	ierr
+	PetscInt					::	nrow1,ncol1,nrow2,ncol2
+	PetscInt					::  ista1,iend1,ilocal1
+	!PetscInt					::  ista2,iend2,ilocal2
+	!PetscScalar,allocatable		::	row(:),rows(:)
+	!integer						::	i,j,k
+
+	call MatGetSize(A,nrow1,ncol1,ierr)
+	nrow2=m*nrow1
+	ncol2=n*ncol2
+
+	! generate matrix B with size M*M
+	call MatCreate(PETSC_COMM_WORLD,B,ierr);
+	call MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,nrow2,ncol2,ierr)
+	call MatSetFromOptions(B,ierr)
+	call MatSetUp(B,ierr)
+
+	call MatGetOwnershipRange(A,ista1,iend1,ierr)
+	ilocal1= iend1-ista1	
+	!print *,">istat=",ista,"iend=",iend
+end subroutine
+
+
 ! -----------------------------------------------------------------------
 ! The repmat function in matrix algebra library is used to replicate matrix
 ! with m times in row and n times in column. The name of this function is
@@ -33,7 +66,7 @@ subroutine ma_repmat1(orgM,m,n,newM,ierr)
 	call MatGetSize(orgM,nrow,ncol,ierr)
 	call MatGetOwnershipRange(orgM,ista,iend,ierr)
 	ilocal= iend-ista	
-	!print *,">istat=",ista,"iend=",iend
+	print *,">istat=",ista,"iend=",iend
 	
 	allocate(idxm(nrow),idxn(ncol),row(ncol),rows(ilocal*ncol),allrows(nrow*ncol))
 	
@@ -44,7 +77,7 @@ subroutine ma_repmat1(orgM,m,n,newM,ierr)
 		call MatRestoreRow(orgM,i,num,idxn,row,ierr)
 	enddo
 	call mpi_allgather(rows,ilocal*ncol,MPIU_SCALAR,allrows,ilocal*ncol,MPIU_SCALAR,PETSC_COMM_WORLD,ierr)
-	!print *,">>allrows=",allrows
+	print *,">>allrows=",allrows
 	
 	call MatCreate(PETSC_COMM_WORLD,newM,ierr)
 	call MatSetSizes(newM,PETSC_DECIDE,PETSC_DECIDE,nrow*m,ncol*n,ierr)
@@ -68,44 +101,8 @@ subroutine ma_repmat1(orgM,m,n,newM,ierr)
 
 	call MatAssemblyBegin(newM,MAT_FINAL_ASSEMBLY,ierr)
 	call MatAssemblyEnd(newM,MAT_FINAL_ASSEMBLY,ierr)
-	call MatView(newM,PETSC_VIEWER_STDOUT_WORLD,ierr)
 	
 	deallocate(idxm,idxn,row,rows,allrows)
-
-end subroutine
-
-subroutine ma_repmat(A,m,n,B,ierr)
-	implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscvec.h90>
-#include <petsc/finclude/petscmat.h>
-	
-	Mat,			intent(in)	::  A 
-	PetscInt,		intent(in)	::	m,n
-	Mat,			intent(out)	::	B	
-	PetscErrorCode,	intent(out)	::	ierr
-	PetscInt					::	nrow1,ncol1,nrow2,ncol2
-	PetscInt					::  ista1,iend1,ilocal1
-	PetscInt					::  ista2,iend2,ilocal2
-	PetscInt					::	num
-	PetscInt,allocatable		::	idxm(:),idxn(:)
-	PetscScalar,allocatable		::	row(:),rows(:)
-	integer						::	i,j,k
-
-	call MatGetSize(A,nrow1,ncol1,ierr)
-	nrow2=m*nrow1
-	ncol2=n*ncol2
-
-	! generate matrix B with size M*M
-	call MatCreate(PETSC_COMM_WORLD,B,ierr);
-	call MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,nrow2,ncol2,ierr)
-	call MatSetFromOptions(B,ierr)
-	call MatSetUp(B,ierr)
-
-	call MatGetOwnershipRange(A,ista1,iend1,ierr)
-	ilocal1= iend1-ista1	
-	!print *,">istat=",ista,"iend=",iend
 
 end subroutine
 
@@ -122,21 +119,25 @@ subroutine ma_eprod(A1,A2,B,ierr)
 	Mat,			intent(in)	::  A1,A2 
 	Mat,			intent(out)	::	B
 	PetscErrorCode,	intent(out)	::	ierr
-	PetscInt					::	nrow,ncol
+	PetscInt					::	nrow1,ncol1,nrow2,ncol2
 	PetscInt					::	num
 	PetscInt,allocatable		::	idxm(:),idxn(:)
 	PetscScalar,allocatable		::	row1(:),row2(:),results(:)
 	PetscInt					::  ista,iend,ilocal
 	integer						::	i
 
-	call MatGetSize(A1,nrow,ncol,ierr)
+	call MatGetSize(A1,nrow1,ncol1,ierr)
+	call MatGetSize(A2,nrow2,ncol2,ierr)
+	if(nrow1/=nrow2 .or. ncol1/=ncol2)then
+		print *, "Error: Matrix A1 and Matrix A2 should have the same sizes"
+		stop	
+	endif
+
 	call MatGetOwnershipRange(A1,ista,iend,ierr)
 	ilocal= iend-ista	
 	!print *,">istat=",ista,"iend=",iend
 	
-	allocate(idxm(nrow),idxn(ncol),row1(ncol),row2(ncol),results(ncol))
-	
-	call MatDuplicate(A1,MAT_COPY_VALUES,B,ierr)
+	allocate(idxm(nrow1),idxn(ncol1),row1(ncol1),row2(ncol1),results(ncol1))
 	
 	do i=ista,iend-1
 		call MatGetRow(A1,i,num,idxn,row1,ierr)
@@ -145,12 +146,11 @@ subroutine ma_eprod(A1,A2,B,ierr)
 		call MatRestoreRow(A2,i,num,idxn,row2,ierr)
 		results = row1*row2	
 		!print *,">i=",i,"results=",results
-		call MatSetValues(B,1,i,ncol,idxn,results,INSERT_VALUES,ierr)
+		call MatSetValues(B,1,i,ncol1,idxn,results,INSERT_VALUES,ierr)
 	enddo
 
 	call MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY,ierr)
 	call MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY,ierr)
-	call MatView(B,PETSC_VIEWER_STDOUT_WORLD,ierr)
 	
 	deallocate(idxm,idxn,row1,row2,results)
 
@@ -172,9 +172,7 @@ subroutine ma_sum(A,dims,B,ierr)
 	Mat,			intent(out)	::	B
 	PetscErrorCode,	intent(out)	::	ierr
 	
-	Mat							::  Tmp
 	PetscInt					::	nrow,ncol
-	PetscInt					::	num
 	PetscInt					::  ista,iend
 
 	call MatGetSize(A,nrow,ncol,ierr)
@@ -182,12 +180,10 @@ subroutine ma_sum(A,dims,B,ierr)
 	print *,">istat=",ista,"iend=",iend
 	
 	
-	call MatDuplicate(A,MAT_COPY_VALUES,B,ierr)
-	
 end subroutine
 
 
-subroutine ma_ones(A,m,n,ierr)
+subroutine ma_ones(A,ierr)
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
@@ -195,22 +191,14 @@ subroutine ma_ones(A,m,n,ierr)
 #include <petsc/finclude/petscmat.h>
 	
 	Mat,			intent(out)	::	A
-	PetscInt,		intent(in)	::	m,n	
 	PetscErrorCode,	intent(out)	::	ierr
 	
 	PetscInt					::	nrow,ncol
-	PetscInt					::	num
 	PetscInt					::  ista,iend
 	PetscInt,allocatable		::	idxn(:)
 	PetscScalar,allocatable		::	row(:),results(:)
 	integer 					:: 	i,j
 	
-	! generate matrix A with size M*M
-	call MatCreate(PETSC_COMM_WORLD,A,ierr);
-	call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,n,ierr)
-	call MatSetFromOptions(A,ierr)
-	call MatSetUp(A,ierr)
-
 	call MatGetSize(A,nrow,ncol,ierr)
 	call MatGetOwnershipRange(A,ista,iend,ierr)
 	!print *,">istat=",ista,"iend=",iend,">ncol=",ncol
@@ -227,39 +215,28 @@ subroutine ma_ones(A,m,n,ierr)
 	enddo
 	call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
 	call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
-	call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr)
 
 	deallocate(idxn,row,results)
 end subroutine
 
-subroutine ma_zeros(A,m,n,ierr)
+subroutine ma_zeros(A,ierr)
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscvec.h90>
 #include <petsc/finclude/petscmat.h>
-	
-	Mat,			intent(out)	::	A
-	PetscInt,		intent(in)	::	m,n	
+	Mat,			intent(in)	::	A
 	PetscErrorCode,	intent(out)	::	ierr
-	
 	PetscInt					::	nrow,ncol
-	PetscInt					::	num
 	PetscInt					::  ista,iend
 	PetscInt,allocatable		::	idxn(:)
-	PetscScalar,allocatable		::	row(:),results(:)
+	PetscScalar,allocatable		::	row(:)
 	integer 					:: 	i,j
 	
-	! generate matrix A with size m*n
-	call MatCreate(PETSC_COMM_WORLD,A,ierr);
-	call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,n,ierr)
-	call MatSetFromOptions(A,ierr)
-	call MatSetUp(A,ierr)
-
 	call MatGetSize(A,nrow,ncol,ierr)
 	call MatGetOwnershipRange(A,ista,iend,ierr)
 	!print *,">istat=",ista,"iend=",iend,">ncol=",ncol
-	allocate(idxn(ncol),row(ncol),results(ncol))
+	allocate(idxn(ncol),row(ncol))
 
 	!call MatAssemblyBegin(T,MAT_FINAL_ASSEMBLY,ierr)
 	!call MatAssemblyEnd(T,MAT_FINAL_ASSEMBLY,ierr)
@@ -272,10 +249,158 @@ subroutine ma_zeros(A,m,n,ierr)
 	enddo
 	call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
 	call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
-	call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr)
 
-	deallocate(idxn,row,results)
+	deallocate(idxn,row)
 end subroutine
+
+
+subroutine ma_diag(A,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+	Mat,			intent(in)	::	A
+	PetscErrorCode,	intent(out)	::	ierr
+	PetscInt					::	nrow,ncol	
+	PetscInt					::  ista,iend
+	PetscInt,allocatable		::	idxn(:)
+	PetscScalar,allocatable		::	row(:)
+	integer 					:: 	i,j
+	
+	! generate matrix A with size m*n
+	call MatGetSize(A,nrow,ncol,ierr)
+	if(nrow /= ncol) then
+		print *, "Error: Matrix should be square"
+		stop	
+	endif
+	call MatGetOwnershipRange(A,ista,iend,ierr)
+	allocate(idxn(ncol),row(ncol))
+
+	do i=ista,iend-1
+		do j=1,ncol
+			idxn(j)=j-1
+			if (i==(j-1)) then
+				row(j)=1.0
+			else
+				row(j)=0.0
+			endif
+		enddo
+		call MatSetValues(A,1,i,ncol,idxn,row,INSERT_VALUES,ierr)
+	enddo
+	call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
+	call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
+
+	deallocate(idxn,row)
+end subroutine
+
+
+subroutine ma_veccreate(v,m,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+	PetscInt,		intent(in)	::	m	
+	Vec,			intent(out)	::	v
+	PetscErrorCode,	intent(out)	::	ierr
+	! generate vector v with size m
+	call VecCreate(PETSC_COMM_WORLD,v,ierr)
+	call VecSetSizes(v,PETSC_DECIDE,m,ierr)
+	call VecSetFromOptions(v,ierr)
+end subroutine
+
+subroutine ma_vecduplicate(v1,v2,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+	Vec,		intent(in)	::	v1	
+	Vec,			intent(out)	::	v2
+	PetscErrorCode,	intent(out)	::	ierr
+	! duplicate vector v2 using v1
+	call VecDuplicate(v1,v2,ierr)
+end subroutine
+
+subroutine ma_vecdestroy(v,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+	Vec,			intent(in)	::	v
+	PetscErrorCode,	intent(out)	::	ierr
+	! destroy vector v
+	call VecDestroy(v,ierr)
+end subroutine
+
+subroutine ma_matcreate(A,m,n,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+	PetscInt,		intent(in)	::	m,n	
+	Mat,			intent(out)	::	A
+	PetscErrorCode,	intent(out)	::	ierr
+	! generate matrix A with size m*n
+	call MatCreate(PETSC_COMM_WORLD,A,ierr);
+	call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,n,ierr)
+	call MatSetFromOptions(A,ierr)
+	call MatSetUp(A,ierr)
+end subroutine
+
+
+subroutine ma_matcopy(A,B,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+	Mat,			intent(in)	::	A
+	Mat,			intent(out)	::	B
+	PetscErrorCode,	intent(out)	::	ierr
+	! veiw matrix A
+	call MatDuplicate(A,MAT_COPY_VALUES,B,ierr)
+end subroutine
+
+
+subroutine ma_matdestroy(A,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+	Mat,			intent(inout)	::	A
+	PetscErrorCode,	intent(out)	::	ierr
+	! destroy matrix A
+	call MatDestroy(A,ierr)
+end subroutine
+
+
+subroutine ma_matview(A,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+	Mat,			intent(in)	::	A
+	PetscErrorCode,	intent(out)	::	ierr
+	! veiw matrix A
+	call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr)
+end subroutine
+
+
+subroutine ma_vecview(v,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+	Vec,			intent(in)	::	v
+	PetscErrorCode,	intent(out)	::	ierr
+	! veiw vec A
+	call VecView(v,PETSC_VIEWER_STDOUT_WORLD,ierr)
+end subroutine
+
 
 
 end module

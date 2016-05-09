@@ -9,94 +9,83 @@ module particle
 
 contains
 
-subroutine createpoints(npoints,xd,yd,rhsd,ierr)
-	implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscvec.h90>
-
-	PetscInt,		intent(in)		::	npoints
-	Vec,			intent(inout)	::	xd,yd,rhsd 
-	PetscErrorCode,	intent(out)		::	ierr
-		
-	integer		i,ista,iend	
-	PetscReal xmin,xmax,ymin,ymax,delta,xcord,ycord,res
-	xmin=0.0	
-	xmax=1.0	
-	ymin=0.0	
-	ymax=1.0	
-
-	delta= (xmax-xmin)/(npoints-1)
-
-	call VecGetOwnershipRange(xd,ista,iend,ierr)
-	print *,ista,iend
-	do i=ista,iend-1,1
-		xcord = xmin+(i/npoints)*delta;
-		ycord = ymin+mod(i,npoints)*delta;
-		call testfunction(xcord,ycord,res);
-		call VecSetValues(xd,1,i,xcord,INSERT_VALUES,ierr)
-		call VecSetValues(yd,1,i,ycord,INSERT_VALUES,ierr)
-		call VecSetValues(rhsd,1,i,res,INSERT_VALUES,ierr)
-	enddo
-
-	call VecAssemblyBegin(xd,ierr)
-	call VecAssemblyEnd(xd,ierr)
-	call VecAssemblyBegin(yd,ierr)
-	call VecAssemblyEnd(yd,ierr)
-	call VecAssemblyBegin(rhsd,ierr)
-	call VecAssemblyEnd(rhsd,ierr)
-end subroutine
-
-
-subroutine generatepoints(npoints,dsites,rhs,ierr)
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! Create the points in rbf application.
+! A: Matrix with m*n rows and 2 columns
+! m: there are m points in x direction 
+! n: there are n points in y direction 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+subroutine createpoints(A,m,n,ierr)
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscvec.h90>
 #include <petsc/finclude/petscmat.h>
-
-	PetscInt,		intent(in)		::	npoints
-	Mat,			intent(out)		::  dsites	
-	Vec,			intent(out)		::  rhs 
+	PetscInt,		intent(in)		::	m,n	
+	Mat,			intent(out)		::	A 
 	PetscErrorCode,	intent(out)		::	ierr
 		
-	PetscReal	xmin,xmax,ymin,ymax,delta,xcord,ycord,res
+	PetscReal	xmin,xmax,ymin,ymax,dx,dy,xcord,ycord
 	PetscInt	ista,iend
 	integer		i
 
-	xmin=0.0	
-	xmax=1.0	
-	ymin=0.0	
-	ymax=1.0	
-	
-	delta= (xmax-xmin)/(npoints-1)
+	xmin=0.0
+	xmax=1.0
+	ymin=0.0
+	ymax=1.0
+	dx= (xmax-xmin)/(m-1)
+	dy= (ymax-ymin)/(n-1)
 	
 	! generate matrix dsites and ctrs with size M*2 
-	call MatCreate(PETSC_COMM_WORLD,dsites,ierr);
-	call MatSetSizes(dsites,PETSC_DECIDE,PETSC_DECIDE,npoints*npoints,2,ierr)
-	call MatSetFromOptions(dsites,ierr)
-    call MatSetUp(dsites,ierr)
-		
-	call MatGetOwnershipRange(dsites,ista,iend,ierr)
-	
+	call MatGetOwnershipRange(A,ista,iend,ierr)
 	
 	do i=ista,iend-1
-		xcord = xmin+(i/npoints)*delta;
-		ycord = ymin+mod(i,npoints)*delta;
-		call testfunction(xcord,ycord,res);
-		call MatSetValue(dsites,i,0,xcord,INSERT_VALUES,ierr) 
-		call MatSetValue(dsites,i,1,ycord,INSERT_VALUES,ierr) 
-		call VecSetValue(rhs,i,res,INSERT_VALUES,ierr)
+		xcord = xmin+(i/n)*dx
+		ycord = ymin+mod(i,n)*dy
+		call MatSetValue(A,i,0,xcord,INSERT_VALUES,ierr) 
+		call MatSetValue(A,i,1,ycord,INSERT_VALUES,ierr) 
 	enddo
+	
+	call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
+	call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
+end subroutine
 
-	call MatAssemblyBegin(dsites,MAT_FINAL_ASSEMBLY,ierr)
-	call MatAssemblyEnd(dsites,MAT_FINAL_ASSEMBLY,ierr)
 
-	call VecAssemblyBegin(rhs,ierr)
-	call VecAssemblyEnd(rhs,ierr)
+subroutine testfunctionD(A,v,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+	Mat,			intent(in)		::	A 
+	Vec,			intent(inout)	::	v 
+	PetscErrorCode,	intent(out)		::	ierr
+	
+	PetscInt						::	nrow,ncol
+	PetscInt						::  ista,iend
+	PetscScalar,allocatable			::	row(:)
+	PetscReal						::	xcord,ycord,res
+	integer							:: 	i
 
-	call MatView(dsites,PETSC_VIEWER_STDOUT_WORLD,ierr)
-	call VecView(rhs,PETSC_VIEWER_STDOUT_WORLD,ierr)
+	call MatGetSize(A,nrow,ncol,ierr)
+	if(ncol/=2)then
+		print *, "Error: the column size of Matrix A in testfunctionD must equal to 2"
+		stop	
+	endif	
+	
+	call MatGetOwnershipRange(A,ista,iend,ierr)
+	!print *,">istat=",ista,"iend=",iend,">ncol=",ncol
+	allocate(row(ncol))
+	
+	do i=ista,iend-1
+		call MatGetRow(A,i,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,row,ierr)
+		xcord=row(1)
+		ycord=row(2)
+		call testfunction(xcord,ycord,res)
+		call VecSetValue(v,i,res,INSERT_VALUES,ierr)
+		call MatRestoreRow(A,i,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,row,ierr)
+	enddo
+	deallocate(row)
 end subroutine
 
 
@@ -121,7 +110,6 @@ subroutine distancematrix(dsites,ctrs,dm)
 	Mat,intent(in)	:: dsites,ctrs
 	Mat,intent(out):: dm
 	PetscInt	nrow,ncol,rsta,rend	
-	Mat			work1,work2
 	PetscErrorCode	ierr
 	integer		i
 	call MatGetSize(dsites,nrow,ncol,ierr)
