@@ -74,64 +74,38 @@ subroutine ma_repmat1(orgM,m,n,newM,ierr)
 
 end subroutine
 
-subroutine ma_repmat(orgM,m,n,newM,ierr)
+subroutine ma_repmat(A,m,n,B,ierr)
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscvec.h90>
 #include <petsc/finclude/petscmat.h>
-	Mat,			intent(in)	::  orgM	
+	
+	Mat,			intent(in)	::  A 
 	PetscInt,		intent(in)	::	m,n
-	Mat,			intent(out)	::	newM 
+	Mat,			intent(out)	::	B	
 	PetscErrorCode,	intent(out)	::	ierr
-	PetscInt					::	nrow,ncol
+	PetscInt					::	nrow1,ncol1,nrow2,ncol2
+	PetscInt					::  ista1,iend1,ilocal1
+	PetscInt					::  ista2,iend2,ilocal2
 	PetscInt					::	num
 	PetscInt,allocatable		::	idxm(:),idxn(:)
-	PetscScalar,allocatable		::	row(:),rows(:),allrows(:)
-	PetscInt					::  ista,iend,ilocal
+	PetscScalar,allocatable		::	row(:),rows(:)
 	integer						::	i,j,k
 
-	call MatGetSize(orgM,nrow,ncol,ierr)
-	call MatGetOwnershipRange(orgM,ista,iend,ierr)
-	ilocal= iend-ista	
+	call MatGetSize(A,nrow1,ncol1,ierr)
+	nrow2=m*nrow1
+	ncol2=n*ncol2
+
+	! generate matrix B with size M*M
+	call MatCreate(PETSC_COMM_WORLD,B,ierr);
+	call MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,nrow2,ncol2,ierr)
+	call MatSetFromOptions(B,ierr)
+	call MatSetUp(B,ierr)
+
+	call MatGetOwnershipRange(A,ista1,iend1,ierr)
+	ilocal1= iend1-ista1	
 	!print *,">istat=",ista,"iend=",iend
-	
-	allocate(idxm(nrow),idxn(ncol),row(ncol),rows(ilocal*ncol),allrows(nrow*ncol))
-	
-	do i=ista,iend-1
-		call MatGetRow(orgM,i,num,idxn,row,ierr)
-		j=mod(i,ilocal)		
-		rows((j*ncol+1):) = row 
-		call MatRestoreRow(orgM,i,num,idxn,row,ierr)
-	enddo
-	call mpi_allgather(rows,ilocal*ncol,MPIU_SCALAR,allrows,ilocal*ncol,MPIU_SCALAR,PETSC_COMM_WORLD,ierr)
-	!print *,">>allrows=",allrows
-	
-	call MatCreate(PETSC_COMM_WORLD,newM,ierr)
-	call MatSetSizes(newM,PETSC_DECIDE,PETSC_DECIDE,nrow*m,ncol*n,ierr)
-	call MatSetFromOptions(newM,ierr)
-	call MatSetUp(newM,ierr)
-
-	call MatAssemblyBegin(newM,MAT_FINAL_ASSEMBLY,ierr)
-	call MatAssemblyEnd(newM,MAT_FINAL_ASSEMBLY,ierr)
-	
-	do j=1,n
-		do i=1,m
-			do k=1,nrow
-				idxm(k)=(i-1)*nrow+k-1
-			enddo
-			do k=1,ncol
-				idxn(k)=(j-1)*ncol+k-1
-			enddo
-			call MatSetValues(newM,nrow,idxm,ncol,idxn,allrows,INSERT_VALUES,ierr)
-		enddo
-	enddo
-
-	call MatAssemblyBegin(newM,MAT_FINAL_ASSEMBLY,ierr)
-	call MatAssemblyEnd(newM,MAT_FINAL_ASSEMBLY,ierr)
-	call MatView(newM,PETSC_VIEWER_STDOUT_WORLD,ierr)
-	
-	deallocate(idxm,idxn,row,rows,allrows)
 
 end subroutine
 
@@ -276,7 +250,7 @@ subroutine ma_zeros(A,m,n,ierr)
 	PetscScalar,allocatable		::	row(:),results(:)
 	integer 					:: 	i,j
 	
-	! generate matrix A with size M*M
+	! generate matrix A with size m*n
 	call MatCreate(PETSC_COMM_WORLD,A,ierr);
 	call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,n,ierr)
 	call MatSetFromOptions(A,ierr)

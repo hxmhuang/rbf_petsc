@@ -73,6 +73,7 @@ program main
 	call ma_zeros(ctrs,4,4,ierr)
 	
 	print *, "============================="
+	
 	!call ma_repmat(dsites,2,2,ctrs,ierr)
 	
 	call VecDestroy(x,ierr)
