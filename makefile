@@ -4,16 +4,19 @@ CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR           = src/ksp/ksp/examples/tutorials/
 MANSEC           = KSP
-CLEANFILES       = main *.o *.mod 
+CLEANFILES       = main test *.o *.mod 
 NP               = 1
-OBJ				 = matrixalgebra.o particle.o main.o 
+OBJMAIN			 = matrixalgebra.o particle.o main.o 
+OBJTEST			 = matrixalgebra.o particle.o test.o 
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 
-main: ${OBJ}  chkopts
-	-${FLINKER} -o main ${OBJ}  ${PETSC_KSP_LIB}
+main: ${OBJMAIN}  chkopts
+	-${FLINKER} -o main ${OBJMAIN}  ${PETSC_KSP_LIB}
 #	${RM} *.mod *.o
+test: ${OBJTEST}  chkopts
+	-${FLINKER} -o test ${OBJTEST}  ${PETSC_KSP_LIB}
 
 #----------------------------------------------------------------------------
 #runex1:
@@ -38,9 +41,15 @@ main: ${OBJ}  chkopts
 #runex8_1:
 #	-@${MPIEXEC} -n 1 ./ex8 -print_error -ksp_view 
 
-run:
+rmain:
 	make clean
 	make main
 	-@${MPIEXEC} -n 4 ./main
+
+rtest:
+	make clean
+	make test 
+	-@${MPIEXEC} -n 4 ./test
+
 
 #include ${PETSC_DIR}/lib/petsc/conf/test

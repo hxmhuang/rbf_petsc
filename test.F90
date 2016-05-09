@@ -18,7 +18,6 @@ program main
 	!KSP				ksp
 	!PC				pc
 	Mat				A,dsites,ctrs
-	Vec				u,x,b,rhs
 	!PetscReal		error
 	PetscMPIInt		myrank,mysize
 	PetscErrorCode	ierr
@@ -40,32 +39,43 @@ program main
 	call MPI_Comm_rank(PETSC_COMM_WORLD,myrank,ierr)
 	call MPI_Comm_rank(PETSC_COMM_WORLD,mysize,ierr)
 
-	! generate some vectors: x,b,u
-	call ma_veccreate(x,m*n,ierr)
-	call ma_vecduplicate(x,b,ierr)
-	call ma_vecduplicate(x,u,ierr)
-	call ma_vecduplicate(x,rhs,ierr)
-
-	! generate matrix A with size M*M
-	call ma_matcreate(A,m*n,m*n,ierr)
-
-	! generate the sample points
-	!call ma_matcreate(dsites,M,2,ierr)
-	!call createpoints(dsites,npoints,npoints,ierr)
-	
-	print *, "==============createpoints & testfunctionD==============="
 	call ma_matcreate(dsites,m*n,2,ierr)
 	call createpoints(dsites,m,n,ierr)
-	call testfunctionD(dsites,rhs,ierr)
-	call ma_matview(dsites,ierr)
-	call ma_vecview(rhs,ierr)
-	call ma_matcopy(dsites,ctrs,ierr)
+	
+	print *, "==============ma_eprod==============="
+	call ma_matcreate(A,m*n,2,ierr)
+	call ma_eprod(dsites,dsites,A,ierr)
+	call ma_matview(A,ierr)
+	call ma_matdestroy(A,ierr)	
+	
+	call ma_matdestroy(dsites,ierr)	
+	call ma_matdestroy(ctrs,ierr)	
 
-	call ma_vecdestroy(x,ierr)
-	call ma_vecdestroy(b,ierr)
-	call ma_vecdestroy(u,ierr)
-	call ma_vecdestroy(rhs,ierr)
-	call ma_matdestroy(a,ierr)
+	print *, "==============ma_ones==============="
+	!call ma_ones(ctrs,6,6,ierr)
+	call ma_matcreate(A,6,5,ierr)
+	call ma_ones(A,ierr)
+	call ma_matview(A,ierr)
+	call ma_matdestroy(A,ierr)	
+
+	!call MatView(ctrs,PETSC_VIEWER_STDOUT_WORLD,ierr)
+	print *, "==============ma_zeros==============="
+	call ma_matcreate(A,5,6,ierr)
+	call ma_zeros(A,ierr)
+	call ma_matview(A,ierr)
+	call ma_matdestroy(A,ierr)	
+
+	print *, "==============ma_diag==============="
+	call ma_matcreate(A,4,4,ierr)
+	call ma_diag(A,ierr)	
+	call ma_matview(A,ierr)
+	call ma_matdestroy(A,ierr)	
+
+	print *, "============================="
+	!call ma_repmat(dsites,2,2,ctrs,ierr)
+	!call ma_repmat(dsites,2,2,ctrs,ierr)
+
+	call ma_matdestroy(A,ierr)
 	call ma_matdestroy(dsites,ierr)
 	call ma_matdestroy(ctrs,ierr)
 	call PetscFinalize(ierr)
