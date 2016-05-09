@@ -63,11 +63,18 @@ program main
 
 	call MatDuplicate(dsites,MAT_COPY_VALUES,ctrs,ierr)
 
-	call ma_repmat(dsites,2,2,ctrs,ierr)
-
+	print *, "============================="
 	call ma_eprod(dsites,dsites,ctrs,ierr)
 
+	print *, "============================="
 	call ma_ones(ctrs,6,6,ierr)
+	
+	print *, "============================="
+	call ma_zeros(ctrs,4,4,ierr)
+	
+	print *, "============================="
+	!call ma_repmat(dsites,2,2,ctrs,ierr)
+	
 	call VecDestroy(x,ierr)
 	call VecDestroy(b,ierr)
 	call VecDestroy(u,ierr)

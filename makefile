@@ -41,6 +41,6 @@ main: ${OBJ}  chkopts
 run:
 	make clean
 	make main
-	-@${MPIEXEC} -n 3 ./main
+	-@${MPIEXEC} -n 4 ./main
 
 #include ${PETSC_DIR}/lib/petsc/conf/test
