@@ -50,13 +50,11 @@ program test
 	call mat_destroy(A,ierr)	
 
 	print *, "==============mat_ones==============="
-	!call mat_ones(ctrs,6,6,ierr)
 	call mat_create(A,6,5,ierr)
 	call mat_ones(A,ierr)
 	call mat_view(A,ierr)
 	call mat_destroy(A,ierr)	
 
-	!call MatView(ctrs,PETSC_VIEWER_STDOUT_WORLD,ierr)
 	print *, "==============mat_zeros==============="
 	call mat_create(A,5,6,ierr)
 	call mat_zeros(A,ierr)
@@ -70,7 +68,6 @@ program test
 	call mat_destroy(A,ierr)	
 	
 	print *, "==============mat_copy==============="
-	call mat_create(ctrs,m*n,2,ierr)
 	call mat_copy(dsites,ctrs,ierr)
 	call mat_view(ctrs,ierr)
 	call mat_destroy(ctrs,ierr)
