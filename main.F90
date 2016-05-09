@@ -17,7 +17,7 @@ program main
 	! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	!KSP				ksp
 	!PC				pc
-	Mat				A,dsites,ctrs
+	Mat				A,Tmp,dsites,ctrs
 	Vec				u,x,b,xdim,ydim,rhs
 	!PetscReal		error
 	PetscMPIInt		myrank,mysize
@@ -67,6 +67,7 @@ program main
 
 	call ma_eprod(dsites,dsites,ctrs,ierr)
 
+	call ma_ones(ctrs,6,6,ierr)
 	call VecDestroy(x,ierr)
 	call VecDestroy(b,ierr)
 	call VecDestroy(u,ierr)

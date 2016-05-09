@@ -1,7 +1,7 @@
 #include <petsc/finclude/petscsysdef.h>
 #include <petsc/finclude/petscvecdef.h>
 
-module matrixalgebra 
+module matrixalgebra
 
 contains
 
@@ -48,8 +48,8 @@ subroutine ma_repmat(orgM,m,n,newM,ierr)
 	call MatSetFromOptions(newM,ierr)
 	call MatSetUp(newM,ierr)
 
-	call MatAssemblyBegin(newM,MAT_FLUSH_ASSEMBLY,ierr)
-	call MatAssemblyEnd(newM,MAT_FLUSH_ASSEMBLY,ierr)
+	call MatAssemblyBegin(newM,MAT_FINAL_ASSEMBLY,ierr)
+	call MatAssemblyEnd(newM,MAT_FINAL_ASSEMBLY,ierr)
 	
 	do j=1,n
 		do i=1,m
@@ -89,7 +89,7 @@ subroutine ma_eprod(A1,A2,B,ierr)
 	PetscInt,allocatable		::	idxm(:),idxn(:)
 	PetscScalar,allocatable		::	row1(:),row2(:),results(:)
 	PetscInt					::  ista,iend,ilocal
-	integer						::	i,j,k
+	integer						::	i
 
 	call MatGetSize(A1,nrow,ncol,ierr)
 	call MatGetOwnershipRange(A1,ista,iend,ierr)
@@ -122,5 +122,80 @@ subroutine ma_eprod(A1,A2,B,ierr)
 
 end subroutine
 
+! -----------------------------------------------------------------------
+! Sum the elements in a matrix along with the row or column 
+! -----------------------------------------------------------------------
+
+subroutine ma_sum(A,dims,B,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+	
+	Mat,			intent(in)	::	A
+	PetscInt,		intent(in)	::	dims
+	Mat,			intent(out)	::	B
+	PetscErrorCode,	intent(out)	::	ierr
+	
+	Mat							::  Tmp
+	PetscInt					::	nrow,ncol
+	PetscInt					::	num
+	PetscInt					::  ista,iend
+
+	call MatGetSize(A,nrow,ncol,ierr)
+	call MatGetOwnershipRange(A,ista,iend,ierr)
+	print *,">istat=",ista,"iend=",iend
+	
+	
+	call MatDuplicate(A,MAT_COPY_VALUES,B,ierr)
+	
+end subroutine
+
+
+subroutine ma_ones(A,m,n,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+	
+	Mat,			intent(out)	::	A
+	PetscInt,		intent(in)	::	m,n	
+	PetscErrorCode,	intent(out)	::	ierr
+	
+	PetscInt					::	nrow,ncol
+	PetscInt					::	num
+	PetscInt					::  ista,iend
+	PetscInt,allocatable		::	idxn(:)
+	PetscScalar,allocatable		::	row(:),results(:)
+	integer 					:: 	i,j
+	
+	! generate matrix A with size M*M
+	call MatCreate(PETSC_COMM_WORLD,A,ierr);
+	call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,n,ierr)
+	call MatSetFromOptions(A,ierr)
+	call MatSetUp(A,ierr)
+
+	call MatGetSize(A,nrow,ncol,ierr)
+	call MatGetOwnershipRange(A,ista,iend,ierr)
+	print *,">istat=",ista,"iend=",iend,">ncol=",ncol
+	allocate(idxn(ncol),row(ncol),results(ncol))
+
+	!call MatAssemblyBegin(T,MAT_FINAL_ASSEMBLY,ierr)
+	!call MatAssemblyEnd(T,MAT_FINAL_ASSEMBLY,ierr)
+	do i=ista,iend-1
+		do j=1,ncol
+			idxn(j)=j-1
+			row(j)=1.0
+		enddo
+		call MatSetValues(A,1,i,ncol,idxn,row,INSERT_VALUES,ierr)
+	enddo
+	call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
+	call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
+	call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr)
+
+	deallocate(idxn,row,results)
+end subroutine
 
 end module
