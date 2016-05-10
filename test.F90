@@ -46,55 +46,85 @@ program test
 	print *, "==============mat_eprod==============="
 	call mat_create(A,m*n,2,ierr)
 	call mat_eprod(dsites,dsites,A,ierr)
-	call mat_view(A,ierr)
+	!call mat_view(A,ierr)
+	call mat_destroy(dsites,ierr)
 	call mat_destroy(A,ierr)	
 
 	print *, "==============mat_ones==============="
-	call mat_create(A,6,5,ierr)
+	call mat_create(A,m,n,ierr)
 	call mat_ones(A,ierr)
-	call mat_view(A,ierr)
+	!call mat_view(A,ierr)
 	call mat_destroy(A,ierr)	
 
 	print *, "==============mat_zeros==============="
-	call mat_create(A,5,6,ierr)
+	call mat_create(A,m,n,ierr)
 	call mat_zeros(A,ierr)
-	call mat_view(A,ierr)
+	!call mat_view(A,ierr)
+	call mat_destroy(A,ierr)	
+
+	print *, "==============mat_seq==============="
+	call mat_create(A,m,n,ierr)
+	call mat_seq(A,ierr)
+	!call mat_view(A,ierr)
 	call mat_destroy(A,ierr)	
 
 	print *, "==============mat_diag==============="
 	call mat_create(A,4,4,ierr)
 	call mat_diag(A,ierr)	
-	call mat_view(A,ierr)
+	!call mat_view(A,ierr)
 	call mat_destroy(A,ierr)	
 	
 	print *, "==============mat_copy==============="
-	call mat_copy(dsites,ctrs,ierr)
-	call mat_view(ctrs,ierr)
-	call mat_destroy(ctrs,ierr)
-
-	print *, "==============mat_hjoin1==============="
-	call mat_create(A,m*n,4,ierr)
-	call mat_hjoin(dsites,dsites,A,ierr)
-	call mat_view(A,ierr)
-	call mat_destroy(dsites,ierr)
+	call mat_create(A,m,n,ierr)
+	call mat_seq(A,ierr)
+	call mat_copy(A,B,ierr)
+	!call mat_view(B,ierr)
 	call mat_destroy(A,ierr)	
-	
-	print *, "==============mat_hjoin2==============="
-	call mat_create(A1,3,5,ierr)
-	call mat_create(A2,3,3,ierr)
-	call mat_create(B,3,8,ierr)
-	call mat_zeros(A1,ierr)
-	call mat_diag(A2,ierr)
-	call mat_hjoin(A1,A2,B,ierr)
-	call mat_view(B,ierr)
-	call mat_destroy(A1,ierr)	
-	call mat_destroy(A2,ierr)	
-	call mat_destroy(B,ierr)	
-	
+	call mat_destroy(B,ierr)
+ 
+!   print *, "==============mat_hjoin1==============="
+!   call mat_create(A,m,n,ierr)
+!   call mat_create(B,m,2*n,ierr)
+!   call mat_seq(A,ierr)
+!   call mat_hjoin(A,A,B,ierr)
+!   !call mat_view(B,ierr)
+!   call mat_destroy(A,ierr)
+!   call mat_destroy(B,ierr)	
+!   
+!   print *, "==============mat_hjoin2==============="
+!   call mat_create(A1,m,n,ierr)
+!   call mat_create(A2,m,m,ierr)
+!   call mat_create(B,m,m+n,ierr)
+!   call mat_zeros(A1,ierr)
+!   call mat_diag(A2,ierr)
+!   call mat_hjoin(A1,A2,B,ierr)
+!   !call mat_view(B,ierr)
+!   call mat_destroy(A1,ierr)	
+!   call mat_destroy(A2,ierr)	
+!   call mat_destroy(B,ierr)	
+!   
+!   print *, "==============mat_mhjoin==============="
+!   call mat_create(A1,m,m,ierr)
+!   call mat_create(A2,m,n,ierr)
+!   call mat_diag(A1,ierr)
+!   call mat_zeros(A2,ierr)
+!   
+!   call mat_create(B,2*m,2*m+1*n,ierr)
+!   call mat_mhjoin(A1,2,A2,1,B,ierr)
+!   !call mat_view(B,ierr)
+!   call mat_destroy(A1,ierr)	
+!   call mat_destroy(A2,ierr)	
+!   call mat_destroy(B,ierr)	
+    
+    print *, "==============mat_rep==============="
+    call mat_create(A,m,n,ierr)
+    call mat_create(B,3*m,2*n,ierr)
+    call mat_seq(A,ierr)
+    call mat_rep(A,3,2,B,ierr)
+    call mat_view(B,ierr)
+    call mat_destroy(A,ierr)	
+    call mat_destroy(B,ierr)	
+    
 	print *, "============================="
-	!call mat_repmat(dsites,2,2,ctrs,ierr)
-	!call mat_repmat(dsites,2,2,ctrs,ierr)
-
 	call PetscFinalize(ierr)
-
 end program
