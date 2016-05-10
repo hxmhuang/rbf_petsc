@@ -18,20 +18,20 @@ program test
 	! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	!KSP				ksp
 	!PC				pc
-	Mat				A,A1,A2,B,dsites,ctrs
+	Mat				A,A1,A2,B
 	!PetscReal		error
 	PetscMPIInt		myrank,mysize
 	PetscErrorCode	ierr
 	PetscInt		m,n
 	PetscBool		debug
 	
-	debug = .false.
-!	debug = .true.
+!	debug = .false.
+	debug = .true.
 	
-!	m=3
-!	n=2
- 	m=900
-  	n=900
+	m=3
+	n=2
+! 	m=900
+!  	n=900
 	! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	!                 Beginning of program
 	! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -40,15 +40,14 @@ program test
 	call MPI_Comm_rank(PETSC_COMM_WORLD,myrank,ierr)
 	call MPI_Comm_rank(PETSC_COMM_WORLD,mysize,ierr)
 
- 	call mat_create(dsites,m*n,2,ierr)
- 	call rbf_createpoints(dsites,m,n,ierr)
-    
  	if(myrank==0) print *, "==============Test mat_eprod==============="
- 	call mat_create(A,m*n,2,ierr)
- 	call mat_eprod(dsites,dsites,A,ierr)
- 	if(debug) call mat_view(A,ierr)
- 	call mat_destroy(dsites,ierr)
- 	call mat_destroy(A,ierr)	
+ 	call mat_create(A,m,n,ierr)
+ 	call mat_create(B,m,n,ierr)
+ 	call mat_seq(A,ierr)
+ 	call mat_eprod(A,A,B,ierr)
+ 	if(debug) call mat_view(B,ierr)
+ 	call mat_destroy(A,ierr)
+ 	call mat_destroy(B,ierr)	
 
  	if(myrank==0) print *, "==============Test mat_ones==============="
  	call mat_create(A,m,n,ierr)

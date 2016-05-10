@@ -50,7 +50,8 @@ rmain:
 rtest:
 	make clean
 	make test 
-	-@${MPIEXEC} -n 16 ./test -log_view
+	-@${MPIEXEC} -n 4 ./test -log_view
+#	-@${MPIEXEC} -n 16 ./test -log_view
 #   -@${MPIEXEC} -n 16 ./test
 
 
