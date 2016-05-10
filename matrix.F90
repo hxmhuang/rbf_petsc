@@ -3,17 +3,16 @@
 ! -----------------------------------------------------------------------
 #include <petsc/finclude/petscsysdef.h>
 #include <petsc/finclude/petscvecdef.h>
-
 module matrix
 
 contains
 
 ! -----------------------------------------------------------------------
-! The repmat function in matrix algebra library is used to replicate matrix
-! with m times in row and n times in column. The name of this function is
-! refered from MATLAB. P is an extended unit matrix (mM*m) and T is another 
-! extended unit matrix (N*nN), we compute using this equation B= P*A*T. 
-! For example, if the size of A is M*N=3*2, suppose m=3 and n=2, we have
+! The repmat function is used to replicate matrix with m times in row and
+! n times in column. The name of this function is refered from MATLAB. 
+! P is an extended unit matrix (mM*m) and T is another 
+! extended unit matrix (N*nN), we compute P*A firstly and then copy the results
+! n folds. For example, if the size of A is M*N=3*2, suppose m=3 and n=2, we have
 ! P= [1 0 0]
 !	 [0 1 0]
 !	 [0 0 1]
@@ -40,43 +39,40 @@ subroutine mat_rep(A,m,n,B,ierr)
 	PetscErrorCode,	intent(out)	::	ierr
 	PetscInt					::	nrow,ncol
 
-	Mat							:: I1,I2,W
+	Mat							:: P,T,W
+	PetscLogEvent				:: ievent(4)
+	
+	call PetscLogEventRegister("mat_rep1",0, ievent(1), ierr)
+	call PetscLogEventRegister("mat_rep2",0, ievent(2), ierr)
+	call PetscLogEventRegister("mat_rep3",0, ievent(3), ierr)
+	call PetscLogEventRegister("mat_rep4",0, ievent(4), ierr)
 
-	Mat							:: P, T
+	call PetscLogEventBegin(ievent(1),ierr)
 	call MatGetSize(A,nrow,ncol,ierr)
-	
-	call mat_create(I1,nrow,nrow,ierr)
-	call mat_create(W,nrow,m*nrow,ierr)
 	call mat_create(P,m*nrow,nrow,ierr)
-	call mat_create(I2,ncol,ncol,ierr)
+	call mat_create(W,m*nrow,ncol,ierr)
 	call mat_create(T,ncol,n*ncol,ierr)
+	call PetscLogEventEnd(ievent(1),ierr)
 	
-	call mat_diag(I1,ierr)
-    call mat_mhjoin(I1,m,I1,0,W,ierr)
-    call MatTranspose(W,MAT_INITIAL_MATRIX,P,ierr)
+	call PetscLogEventBegin(ievent(2),ierr)
+	call mat_eye(P,ierr)
+    call MatMatMult(P,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT_REAL,W,ierr) 
+	call PetscLogEventEnd(ievent(2),ierr)
 
-	call mat_diag(I2,ierr)
-	call mat_mhjoin(I2,n,I2,0,T,ierr)
-  
-	!print *, "=============P==========="
-	!call mat_view(P,ierr)
-	!print *, "=============A==========="
-	!call mat_view(A,ierr)
-	!print *, "=============T==========="
-	!call mat_view(T,ierr)
+	call PetscLogEventBegin(ievent(3),ierr)
+	call mat_eye(T,ierr)
+    call MatMatMult(W,T,MAT_INITIAL_MATRIX,PETSC_DEFAULT_REAL,B,ierr) 
+	call PetscLogEventEnd(ievent(3),ierr)
 
-	call MatMatMatMult(P,A,T,MAT_INITIAL_MATRIX,PETSC_DEFAULT_REAL,B,ierr)	
-
-	call mat_destroy(I1,ierr)
-	call mat_destroy(I2,ierr)
-	call mat_destroy(W,ierr)
+	call PetscLogEventBegin(ievent(4),ierr)
 	call mat_destroy(P,ierr)
+	call mat_destroy(W,ierr)
 	call mat_destroy(T,ierr)
-	
 	call MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY,ierr)
 	call MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY,ierr)
-
+	call PetscLogEventEnd(ievent(4),ierr)
 end subroutine
+
 
 ! -----------------------------------------------------------------------
 ! The eprod function in matrix algebra library is used to implement the
@@ -226,8 +222,20 @@ subroutine mat_zeros(A,ierr)
 	deallocate(idxn,row)
 end subroutine
 
-
-subroutine mat_diag(A,ierr)
+! -----------------------------------------------------------------------
+! The eye function is used to generate the simple and complex identity matrixs. 
+! For example, if A is a 2*6 matrix, we can use mat_exeye(A,ierr) to obtain 
+! A= [1 0 1 0 1 0]
+!	 [0 1 0 1 1 0]
+! if A is a 6*2 matrix, then mat_exeye(A,ierr) will generate
+! A= [1 0]
+!	 [0 1]
+!	 [1 0]
+!    [0 1]
+!	 [1 0]
+!    [0 1]
+! -----------------------------------------------------------------------
+subroutine mat_eye(A,ierr)
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
@@ -236,36 +244,56 @@ subroutine mat_diag(A,ierr)
 	Mat,			intent(in)	::	A
 	PetscErrorCode,	intent(out)	::	ierr
 	PetscInt					::	nrow,ncol	
-	PetscInt					::  ista,iend
+	PetscInt					::	nmax, nmin 
+	PetscInt					::  ista,iend,xpos,ypos
 	PetscInt,allocatable		::	idxn(:)
 	PetscScalar,allocatable		::	row(:)
 	integer 					:: 	i,j
+	PetscLogEvent				::	ievent(3)
 	
+	call PetscLogEventRegister("mat_eye1",0, ievent(1), ierr)
+	call PetscLogEventRegister("mat_eye2",0, ievent(2), ierr)
+	call PetscLogEventRegister("mat_eye3",0, ievent(3), ierr)
+
+	call PetscLogEventBegin(ievent(1),ierr)
 	! generate matrix A with size m*n
 	call MatGetSize(A,nrow,ncol,ierr)
-	if(nrow /= ncol) then
-		print *, "Error: Matrix should be square"
+	nmin=min(nrow,ncol)
+	nmax=max(nrow,ncol)
+ 	if(mod(nmax,nmin) /= 0) then
+		print *, "Error in mat_eye: the size of input matrix A should be (NM)*M or M*(NM)"
 		stop	
 	endif
 	call MatGetOwnershipRange(A,ista,iend,ierr)
 	allocate(idxn(ncol),row(ncol))
+	call PetscLogEventEnd(ievent(1),ierr)
 
-	do i=ista,iend-1
+	call PetscLogEventBegin(ievent(2),ierr)
+    do i=ista,iend-1
+    	xpos=mod(i,nmin)
+    	
 		do j=1,ncol
 			idxn(j)=j-1
-			if (i==(j-1)) then
-				row(j)=1.0
-			else
-				row(j)=0.0
-			endif
+    		ypos=mod(j-1,nmin)
+    		if(ypos==xpos) then
+    			row(j)=1.0
+    		else
+    			row(j)=0.0
+    		endif
+    		!print *,"i=",i,"j=",j,"xpos=",xpos,"ypos=",ypos,"row(",j,")=",row(j) 
 		enddo
-		call MatSetValues(A,1,i,ncol,idxn,row,INSERT_VALUES,ierr)
+	   	call MatSetValues(A,1,i,ncol,idxn,row,INSERT_VALUES,ierr)
 	enddo
-	call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
-	call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
-
+	call PetscLogEventEnd(ievent(2),ierr)
+		
+	call PetscLogEventBegin(ievent(3),ierr)
+    call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
+    call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
 	deallocate(idxn,row)
+	call PetscLogEventEnd(ievent(3),ierr)
 end subroutine
+
+
 
 subroutine mat_create(A,m,n,ierr)
 	implicit none
@@ -469,7 +497,7 @@ end subroutine
 ! For example, using mat_mhjion(A1,3,A2,2,B,ierr), we can get
 !	B= [A1,A1,A1,A2,A2] 
 ! -----------------------------------------------------------------------
-subroutine mat_mhjoin(A1,m,A2,n,B,ierr)
+subroutine To_delete__mat_mhjoin(A1,m,A2,n,B,ierr)
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>

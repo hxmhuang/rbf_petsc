@@ -2,10 +2,10 @@
 ! Implementing the rbf_interpolation2D with the ASM preconditioner
 ! -----------------------------------------------------------------------
 program main
-	use matrix
-	use vector 
-	use rbf 
-	implicit none
+    use matrix
+    use vector 
+    use rbf 
+    implicit none
 
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscviewer.h>
@@ -13,12 +13,12 @@ program main
 #include <petsc/finclude/petscvec.h90>
 #include <petsc/finclude/petscmat.h>
 #include <petsc/finclude/petscksp.h>
-	! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	!                   Variable declarations
-	! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	!KSP				ksp
-	!PC				pc
-	Mat				A,dsites,ctrs
+    ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    !                   Variable declarations
+    ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    !KSP				ksp
+    !PC				pc
+    Mat				A,dsites,ctrs
 	Vec				u,x,b,rhs
 	!PetscReal		error
 	PetscMPIInt		myrank,mysize
