@@ -269,8 +269,7 @@ program test
         if(myrank==0) print *, ">B="
         call mat_view(B,ierr)
  	endif
-    call mat_destroy(A1,ierr)	
- 	call mat_destroy(A2,ierr)	
+    call mat_destroy(A,ierr)	
  	call mat_destroy(B,ierr)	
 
 

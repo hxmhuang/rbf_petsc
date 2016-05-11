@@ -106,6 +106,7 @@ subroutine mat_mult(A,B,C,ierr)
 	call PetscLogEventEnd(ievent(1),ierr)
 	
 	call PetscLogEventBegin(ievent(2),ierr)
+    call mat_destroy(C,ierr)
     call MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT_REAL,C,ierr) 
 	call PetscLogEventEnd(ievent(2),ierr)
 end subroutine
@@ -725,6 +726,7 @@ subroutine mat_trans(A,B,ierr)
 	call PetscLogEventRegister("mat_trans",0, ievent(1), ierr)
 	
 	call PetscLogEventBegin(ievent(1),ierr)
+    call mat_destroy(B,ierr)
 	call MatTranspose(A,MAT_INITIAL_MATRIX,B,ierr)
 	call PetscLogEventEnd(ievent(1),ierr)
 end subroutine
