@@ -677,8 +677,7 @@ subroutine mat_axpy(Y,a,X,ierr)
 	PetscScalar,    intent(in)	    ::	a
 	Mat,			intent(inout)   ::	Y	
 	PetscErrorCode,	intent(out)	    ::	ierr
-
-	PetscLogEvent				:: ievent(1)
+	PetscLogEvent				    :: ievent(1)
 	
 	call PetscLogEventRegister("mat_axpy",0, ievent(1), ierr)
 
@@ -700,13 +699,88 @@ subroutine mat_aypx(Y,a,X,ierr)
 	PetscScalar,    intent(in)	    ::	a
 	Mat,			intent(inout)   ::	Y	
 	PetscErrorCode,	intent(out)	    ::	ierr
-
-	PetscLogEvent				:: ievent(1)
+	PetscLogEvent				    :: ievent(1)
 	
 	call PetscLogEventRegister("mat_aypx",0, ievent(1), ierr)
 
 	call PetscLogEventBegin(ievent(1),ierr)
 	call MatAYPX(Y,a,X,DIFFERENT_NONZERO_PATTERN,ierr)
+	call PetscLogEventEnd(ievent(1),ierr)
+end subroutine
+
+! -----------------------------------------------------------------------
+! B = A^T.
+! -----------------------------------------------------------------------
+subroutine mat_trans(A,B,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+	Mat,			intent(in)	    ::  A 
+	Mat,			intent(out)     ::	B	
+	PetscErrorCode,	intent(out)	    ::	ierr
+	PetscLogEvent				    :: ievent(1)
+	
+	call PetscLogEventRegister("mat_trans",0, ievent(1), ierr)
+	
+	call PetscLogEventBegin(ievent(1),ierr)
+	call MatTranspose(A,MAT_INITIAL_MATRIX,B,ierr)
+	call PetscLogEventEnd(ievent(1),ierr)
+end subroutine
+
+
+! -----------------------------------------------------------------------
+! C = A*B^T.
+! -----------------------------------------------------------------------
+subroutine mat_abtmult(A,B,C,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+	Mat,			intent(in)	    ::  A,B 
+	Mat,			intent(out)     ::	C	
+	PetscErrorCode,	intent(out)	    ::	ierr
+	Mat             			    ::  W
+	PetscInt					    ::	nrow,ncol
+	PetscLogEvent				    ::  ievent(1)
+	
+	call PetscLogEventRegister("mat_abtmult",0, ievent(1), ierr)
+     
+	call PetscLogEventBegin(ievent(1),ierr)
+    call MatGetSize(B,nrow,ncol,ierr)
+    call mat_create(W,ncol,nrow,ierr)
+    call mat_trans(B,W,ierr)
+    call mat_mult(A,W,C,ierr)
+    call mat_destroy(W,ierr)
+	call PetscLogEventEnd(ievent(1),ierr)
+end subroutine
+
+! -----------------------------------------------------------------------
+! C = A^T*B.
+! -----------------------------------------------------------------------
+subroutine mat_atbmult(A,B,C,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+	Mat,			intent(in)	    ::  A,B 
+	Mat,			intent(out)     ::	C	
+	PetscErrorCode,	intent(out)	    ::	ierr
+	Mat             			    ::  W
+	PetscInt					    ::	nrow,ncol
+	PetscLogEvent				    ::  ievent(1)
+	
+	call PetscLogEventRegister("mat_abtmult",0, ievent(1), ierr)
+	
+	call PetscLogEventBegin(ievent(1),ierr)
+    call MatGetSize(A,nrow,ncol,ierr)
+    call mat_create(W,ncol,nrow,ierr)
+    call mat_trans(A,W,ierr)
+    call mat_mult(W,B,C,ierr)
+    call mat_destroy(W,ierr)
 	call PetscLogEventEnd(ievent(1),ierr)
 end subroutine
 
