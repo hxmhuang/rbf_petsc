@@ -25,29 +25,46 @@ subroutine rbf_createpoints(A,m,n,ierr)
 	Mat,			intent(out)		::	A 
 	PetscErrorCode,	intent(out)		::	ierr
 		
-	PetscReal	xmin,xmax,ymin,ymax,dx,dy,xcord,ycord
-	PetscInt	ista,iend
-	integer		i
-
-	xmin=0.0
+	PetscReal	                    ::  xmin,xmax,ymin,ymax,dx,dy,xcord,ycord
+	PetscInt	                    ::  ista,iend
+	PetscInt	                    ::  nrow,ncol,nlocal
+    PetscInt,allocatable            ::  idxm(:),idxn(:) 
+    PetscScalar,allocatable         ::  rows(:)
+	integer		                    ::  i,j
+	
+    xmin=0.0
 	xmax=1.0
 	ymin=0.0
 	ymax=1.0
 	dx= (xmax-xmin)/(m-1)
 	dy= (ymax-ymin)/(n-1)
 	
-	! generate matrix dsites and ctrs with size M*2 
-	call MatGetOwnershipRange(A,ista,iend,ierr)
+	call MatGetSize(A,nrow,ncol,ierr)
+    if(ncol/=2) then
+        print *, "Error in rbf_createpoints: The column size of matrix A should be 2."
+        stop
+    endif
+    
+    call MatGetOwnershipRange(A,ista,iend,ierr)
+    nlocal=iend-ista
+    allocate(idxm(nlocal),idxn(ncol),rows(2*nlocal))
 	
-	do i=ista,iend-1
+    do i=ista,iend-1
 		xcord = xmin+(i/n)*dx
 		ycord = ymin+mod(i,n)*dy
-		call MatSetValue(A,i,0,xcord,INSERT_VALUES,ierr) 
-		call MatSetValue(A,i,1,ycord,INSERT_VALUES,ierr) 
+        rows((i-ista)*ncol+1)=xcord
+        rows((i-ista)*ncol+2)=ycord
+        idxm(i-ista+1)=i
 	enddo
-	
+    do j=1,ncol
+        idxn(j)=j-1
+    enddo
+    !print *, "nlocal=",nlocal,"idxm=",idxm,"idxn=",idxn,"rows=",rows
+    call MatSetValues(A,nlocal,idxm,ncol,idxn,rows,INSERT_VALUES,ierr) 
+    
 	call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
 	call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
+    deallocate(idxm,idxn,rows)
 end subroutine
 
 
