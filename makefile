@@ -45,22 +45,22 @@ test: ${OBJTEST}  chkopts
 rmain:
 	make clean
 	make main
-	-@${MPIEXEC} -n 4 ./main
+	-@${MPIEXEC} -n 4 ./main -mat_composite_merge 
 
 small:
 	make clean
 	make test 
-	-@${MPIEXEC} -n 4 ./test -m 3 -n 2 -debug  
+	-@${MPIEXEC} -n 4 ./test -m 3 -n 2 -debug -mat_composite_merge  
 
 middle:
 	make clean
 	make test 
-	-@${MPIEXEC} -n 8 ./test -m 100 -n 100 -log_view
+	-@${MPIEXEC} -n 8 ./test -m 100 -n 100 -log_view -mat_composite_merge 
 
 big:
 	make clean
 	make test 
-	-@${MPIEXEC} -n 16 ./test -m 900 -n 900 -log_view
+	-@${MPIEXEC} -n 16 ./test -m 900 -n 900 -log_view -mat_composite_merge 
 
 
 
