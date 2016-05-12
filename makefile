@@ -62,6 +62,11 @@ big:
 	make test 
 	-@${MPIEXEC} -n 16 ./test -m 900 -n 900 -log_view -mat_composite_merge 
 
+huge:
+	make clean
+	make test 
+	-@${MPIEXEC} -n 16 ./test -m 3600 -n 1800 -log_view -mat_composite_merge 
+
 
 
 

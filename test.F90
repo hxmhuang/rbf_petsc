@@ -320,8 +320,8 @@ call PetscLogEventEnd(ievent(9),ierr)
 
     if(myrank==0) print *, "==============Test mat_xyt=============="
     call PetscLogEventBegin(ievent(15),ierr)
-    call mat_ones(A1,m,n,ierr)
-    call mat_ones(A2,m,n,ierr)
+    call mat_ones(A1,m,m,ierr)
+    call mat_eye(A2,m,m,ierr)
     call mat_xyt(A1,A2,B,ierr)
     if(debug) then
         if(myrank==0) print *, ">A1="
@@ -339,8 +339,8 @@ call PetscLogEventEnd(ievent(9),ierr)
 
     if(myrank==0) print *, "==============Test mat_xty=============="
     call PetscLogEventBegin(ievent(16),ierr)
- 	call mat_ones(A1,m,n,ierr)
- 	call mat_ones(A2,m,n,ierr)
+ 	call mat_ones(A1,m,m,ierr)
+ 	call mat_eye(A2,m,m,ierr)
     call mat_xty(A1,A2,B,ierr)
     if(debug) then
         if(myrank==0) print *, ">A1="
