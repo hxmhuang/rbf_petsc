@@ -2,6 +2,7 @@
 #include <petsc/finclude/petscvecdef.h>
 
 module	rbf 
+	
 	type MyStruct
 	sequence
 	PetscScalar :: a,b,c
@@ -118,20 +119,25 @@ subroutine testfunction(xcord,ycord,res)
 end subroutine
 
 
-subroutine rbf_distancematrix(dsites,ctrs,dm)
+subroutine rbf_distancematrix(dsites,ctrs,dm,ierr)
+	use matrix 
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscvec.h90>
 #include <petsc/finclude/petscmat.h>
-	Mat,intent(in)	        :: dsites, ctrs
-	Mat,intent(out)         :: dm
-	Mat                     :: W1,W2,W3,W4 
-	Mat                     :: P1,P2,P3,P4 
-	PetscInt	            :: nrow1,ncol1,nrow2,ncol2,ista,iend	
-	PetscErrorCode	        :: ierr
-	integer		            :: i
+	Mat,			intent(in)	   	:: dsites,ctrs
+	Mat,			intent(out)     :: dm
+	PetscErrorCode,	intent(out)	    :: ierr
+	Mat                     		:: W1,W2,W3,W4 
+	Mat                     		:: P1,P2,P3 
+	PetscInt	            		:: nrow1,ncol1,nrow2,ncol2,ista,iend	
+	PetscScalar						:: alpha
 
+	PetscMPIInt		myrank,mysize
+	call MPI_Comm_rank(PETSC_COMM_WORLD,myrank,ierr)
+	call MPI_Comm_rank(PETSC_COMM_WORLD,mysize,ierr)
+ 
 	call MatGetSize(dsites,nrow1,ncol1,ierr)
 	call MatGetSize(dsites,nrow2,ncol2,ierr)
 	if(ncol1/=ncol2)then
@@ -140,21 +146,41 @@ subroutine rbf_distancematrix(dsites,ctrs,dm)
 	endif
     
     call mat_eprod(dsites,dsites,W1,ierr)
-
     call mat_sum(W1,2,W2,ierr)
-
     call mat_rep(W2,1,nrow2,P1,ierr)
-
-
-
+	if(myrank==0) print *, ">P1="
+	call mat_view(P1,ierr)
+	
+	call mat_xyt(dsites,ctrs,P2,ierr)
+	if(myrank==0) print *, ">P2="
+	call mat_view(P2,ierr)
+	alpha=-2.0
+	call mat_axpy(P1,alpha,P2,ierr)
+	
     call mat_destroy(W1,ierr)
     call mat_destroy(W2,ierr)
+	
+	call mat_eprod(ctrs,ctrs,W1,ierr)
+	call mat_sum(W1,2,W2,ierr)
+	call mat_trans(W2,W3,ierr)
+	call mat_rep(W3,nrow1,1,P3,ierr)
+	if(myrank==0) print *, ">P3="
+	call mat_view(P3,ierr)
+	
+	alpha=1.0
+	call mat_axpy(P1,alpha,P3,ierr)	
+   
+	call mat_copy(P1,dm,ierr) 
+	if(myrank==0) print *, ">dm="
+	call mat_view(dm,ierr)
+
+	call mat_destroy(W1,ierr)
+    call mat_destroy(W2,ierr)
     call mat_destroy(W3,ierr)
-    call mat_destroy(W4,ierr)
-    call mat_destroy(P1,ierr)
+    
+	call mat_destroy(P1,ierr)
     call mat_destroy(P2,ierr)
     call mat_destroy(P3,ierr)
-    call mat_destroy(P4,ierr)
 
 end subroutine
 

@@ -80,7 +80,7 @@ program main
 	call vec_duplicate(x,rhs,ierr)
 
 	! generate matrix A with size M*N
-	call mat_create(A,m*n,m*n,ierr)
+	!call mat_create(A,m*n,m*n,ierr)
 	
 	print *, "==============createpoints & testfunctionD==============="
 	call mat_create(dsites,m*n,2,ierr)
@@ -94,6 +94,8 @@ program main
  	endif
 	
     call mat_copy(dsites,ctrs,ierr)
+	
+	call rbf_distancematrix(dsites,ctrs,A,ierr)
 
 	call vec_destroy(x,ierr)
 	call vec_destroy(b,ierr)
