@@ -148,12 +148,12 @@ subroutine rbf_distancematrix(dsites,ctrs,dm,ierr)
     call mat_eprod(dsites,dsites,W1,ierr)
     call mat_sum(W1,2,W2,ierr)
     call mat_rep(W2,1,nrow2,P1,ierr)
-	if(myrank==0) print *, ">P1="
-	call mat_view(P1,ierr)
+	!if(myrank==0) print *, ">P1="
+	!call mat_view(P1,ierr)
 	
 	call mat_xyt(dsites,ctrs,P2,ierr)
-	if(myrank==0) print *, ">P2="
-	call mat_view(P2,ierr)
+	!if(myrank==0) print *, ">P2="
+	!call mat_view(P2,ierr)
 	alpha=-2.0
 	call mat_axpy(P1,alpha,P2,ierr)
 	
@@ -164,15 +164,15 @@ subroutine rbf_distancematrix(dsites,ctrs,dm,ierr)
 	call mat_sum(W1,2,W2,ierr)
 	call mat_trans(W2,W3,ierr)
 	call mat_rep(W3,nrow1,1,P3,ierr)
-	if(myrank==0) print *, ">P3="
-	call mat_view(P3,ierr)
+	!if(myrank==0) print *, ">P3="
+	!call mat_view(P3,ierr)
 	
 	alpha=1.0
 	call mat_axpy(P1,alpha,P3,ierr)	
    
 	call mat_copy(P1,dm,ierr) 
-	if(myrank==0) print *, ">dm="
-	call mat_view(dm,ierr)
+	!if(myrank==0) print *, ">dm="
+	!call mat_view(dm,ierr)
 
 	call mat_destroy(W1,ierr)
     call mat_destroy(W2,ierr)
