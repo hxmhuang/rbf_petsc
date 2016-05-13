@@ -42,10 +42,21 @@ test: ${OBJTEST}  chkopts
 #runex8_1:
 #	-@${MPIEXEC} -n 1 ./ex8 -print_error -ksp_view 
 
-mainrun:
+mains:
 	make clean
 	make main
 	-@${MPIEXEC} -n 4 ./main -m 3 -n 3 -debug -mat_composite_merge 
+
+mainm:
+	make clean
+	make main
+	-@${MPIEXEC} -n 8 ./main -m 30 -n 30 -log_view -mat_composite_merge 
+
+mainb:
+	make clean
+	make main
+	-@${MPIEXEC} -n 16 ./main -m 100 -n 100 -log_view -mat_composite_merge 
+
 
 small:
 	make clean

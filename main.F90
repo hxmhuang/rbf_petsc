@@ -82,7 +82,10 @@ program main
 	! generate matrix A with size M*N
 	!call mat_create(A,m*n,m*n,ierr)
 	
-	print *, "==============createpoints & testfunctionD==============="
+    if(myrank==0) then 
+		print *, "==============createpoints & testfunctionD==============="
+	endif 
+	
 	call mat_create(dsites,m*n,2,ierr)
 	call rbf_createpoints(dsites,m,n,ierr)
 	call rbf_testfunctionD(dsites,rhs,ierr)
