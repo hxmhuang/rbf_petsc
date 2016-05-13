@@ -86,9 +86,14 @@ program main
 	call mat_create(dsites,m*n,2,ierr)
 	call rbf_createpoints(dsites,m,n,ierr)
 	call rbf_testfunctionD(dsites,rhs,ierr)
-	call mat_view(dsites,ierr)
-	call vec_view(rhs,ierr)
-	call mat_copy(dsites,ctrs,ierr)
+    if(debug) then
+        if(myrank==0) print *, ">dsites="
+        call mat_view(dsites,ierr)
+        if(myrank==0) print *, ">rhs="
+	    call vec_view(rhs,ierr)
+ 	endif
+	
+    call mat_copy(dsites,ctrs,ierr)
 
 	call vec_destroy(x,ierr)
 	call vec_destroy(b,ierr)

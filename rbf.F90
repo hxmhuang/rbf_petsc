@@ -75,7 +75,7 @@ subroutine rbf_testfunctionD(A,v,ierr)
 #include <petsc/finclude/petscvec.h90>
 #include <petsc/finclude/petscmat.h>
 	Mat,			intent(in)		::	A 
-	Vec,			intent(inout)	::	v 
+	Vec,			intent(out)	    ::	v 
 	PetscErrorCode,	intent(out)		::	ierr
 	
 	PetscInt						::	nrow,ncol
@@ -124,18 +124,37 @@ subroutine rbf_distancematrix(dsites,ctrs,dm)
 #include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscvec.h90>
 #include <petsc/finclude/petscmat.h>
-	Mat,intent(in)	:: dsites,ctrs
-	Mat,intent(out):: dm
-	PetscInt	nrow,ncol,rsta,rend	
-	PetscErrorCode	ierr
-	integer		i
-	call MatGetSize(dsites,nrow,ncol,ierr)
+	Mat,intent(in)	        :: dsites, ctrs
+	Mat,intent(out)         :: dm
+	Mat                     :: W1,W2,W3,W4 
+	Mat                     :: P1,P2,P3,P4 
+	PetscInt	            :: nrow1,ncol1,nrow2,ncol2,ista,iend	
+	PetscErrorCode	        :: ierr
+	integer		            :: i
 
-	call MatGetOwnershipRange(dsites,rsta,rend,ierr)
-	print *,rsta,rend
-	do i=rsta,rend-1,1
-	
-	enddo
+	call MatGetSize(dsites,nrow1,ncol1,ierr)
+	call MatGetSize(dsites,nrow2,ncol2,ierr)
+	if(ncol1/=ncol2)then
+		print *, "Error in rbf_distancematrix: the matrix A1 and A2 should have the same column size."
+		stop	
+	endif
+    
+    call mat_eprod(dsites,dsites,W1,ierr)
+
+    call mat_sum(W1,2,W2,ierr)
+
+    call mat_rep(W2,1,nrow2,P1,ierr)
+
+
+
+    call mat_destroy(W1,ierr)
+    call mat_destroy(W2,ierr)
+    call mat_destroy(W3,ierr)
+    call mat_destroy(W4,ierr)
+    call mat_destroy(P1,ierr)
+    call mat_destroy(P2,ierr)
+    call mat_destroy(P3,ierr)
+    call mat_destroy(P4,ierr)
 
 end subroutine
 
