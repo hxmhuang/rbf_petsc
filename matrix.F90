@@ -3,6 +3,8 @@
 ! -----------------------------------------------------------------------
 #include <petsc/finclude/petscsysdef.h>
 #include <petsc/finclude/petscvecdef.h>
+#include "mat_math_type.h"
+
 module matrix
 
 contains
@@ -298,26 +300,26 @@ end subroutine
 
 
 ! -----------------------------------------------------------------------
-! Compute B=A*B
+! Compute B=A1*A2
 ! -----------------------------------------------------------------------
-subroutine mat_mult(A,B,C,ierr)
+subroutine mat_mult(A1,A2,B,ierr)
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscvec.h90>
 #include <petsc/finclude/petscmat.h>
-	Mat,			intent(in)	::  A,B 
-	Mat,			intent(out)	::	C	
+	Mat,			intent(in)	::  A1,A2 
+	Mat,			intent(out)	::	B	
 	PetscErrorCode,	intent(out)	::	ierr
 	PetscInt					::	nrow1,ncol1,nrow2,ncol2
 	
-	call MatGetSize(A,nrow1,ncol1,ierr)
-    call MatGetSize(B,nrow2,ncol2,ierr)
-	if(ncol1/=nrow2)then
-		print *, "Error in mat_mult: the column of A matrix should equal to the row of B matrix."
-		stop	
-	endif
-    call MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT_REAL,C,ierr) 
+	call MatGetSize(A1,nrow1,ncol1,ierr)
+    call MatGetSize(A2,nrow2,ncol2,ierr)
+ 	if(ncol1/=nrow2)then
+ 		print *, "Error in mat_mult: the column of A1 matrix should equal to the row of A2 matrix."
+ 		stop	
+ 	endif
+    call MatMatMult(A1,A2,MAT_INITIAL_MATRIX,PETSC_DEFAULT_REAL,B,ierr) 
 end subroutine
 
 
@@ -397,54 +399,6 @@ subroutine mat_eprod(A1,A2,B,ierr)
 
 	call MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY,ierr)
 	call MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY,ierr)
-end subroutine
-
-
-subroutine bk_mat_eprod1(A1,A2,B,ierr)
-	implicit none
-#include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscvec.h>
-#include <petsc/finclude/petscvec.h90>
-#include <petsc/finclude/petscmat.h>
-	Mat,			intent(in)	::  A1,A2 
-	Mat,			intent(out)	::	B
-	PetscErrorCode,	intent(out)	::	ierr
-	PetscInt					::	nrow1,ncol1,nrow2,ncol2
-	PetscInt					::	num
-	PetscInt,allocatable		::	idxm(:),idxn(:)
-	PetscScalar,allocatable		::	row1(:),row2(:),results(:)
-	PetscInt					::  ista,iend,ilocal
-	integer						::	i
-
-	call MatGetSize(A1,nrow1,ncol1,ierr)
-	call MatGetSize(A2,nrow2,ncol2,ierr)
-	if(nrow1/=nrow2 .or. ncol1/=ncol2)then
-		print *, "Error: Matrix A1 and Matrix A2 should have the same sizes"
-		stop	
-	endif
- 	call mat_create(B,nrow1,ncol1,ierr)
-
-	call MatGetOwnershipRange(A1,ista,iend,ierr)
-	ilocal= iend-ista	
-	!print *,">ista=",ista,"iend=",iend
-	
-	allocate(idxm(nrow1),idxn(ncol1),row1(ncol1),row2(ncol1),results(ncol1))
-	
-	do i=ista,iend-1
-		call MatGetRow(A1,i,num,idxn,row1,ierr)
-		call MatRestoreRow(A1,i,num,idxn,row1,ierr)
-		call MatGetRow(A2,i,num,idxn,row2,ierr)
-		call MatRestoreRow(A2,i,num,idxn,row2,ierr)
-		results = row1*row2	
-		!print *,">i=",i,"results=",results
-		call MatSetValues(B,1,i,ncol1,idxn,results,INSERT_VALUES,ierr)
-	enddo
-
-	call MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY,ierr)
-	call MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY,ierr)
-	
-	deallocate(idxm,idxn,row1,row2,results)
-
 end subroutine
 
 
@@ -604,9 +558,9 @@ subroutine mat_xyt(X,Y,B,ierr)
 #include <petsc/finclude/petscmat.h>
 	Mat,			intent(in)	    ::  X,Y 
 	Mat,			intent(out)     ::	B	
+	Mat 			                ::	W	
 	PetscErrorCode,	intent(out)	    ::	ierr
-	Mat             			    ::  W
-	
+    !call MatMatTransposeMult(X,Y,MAT_INITIAL_MATRIX,PETSC_DEFAULT_REAL,B,ierr) 	
     call mat_trans(Y,W,ierr)
     call mat_mult(X,W,B,ierr)
     call mat_destroy(W,ierr)
@@ -625,11 +579,93 @@ subroutine mat_xty(X,Y,B,ierr)
 	Mat,			intent(in)	    ::  X,Y 
 	Mat,			intent(out)     ::	B	
 	PetscErrorCode,	intent(out)	    ::	ierr
-	Mat             			    ::  W
+    call MatTransposeMatMult(X,Y,MAT_INITIAL_MATRIX,PETSC_DEFAULT_REAL,B,ierr)
+end subroutine
+
+
+! -----------------------------------------------------------------------
+! X = a*X
+! -----------------------------------------------------------------------
+subroutine mat_scale(X,a,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+	Mat,			intent(inout)	::  X 
+	PetscScalar,    intent(in)     ::	a	
+	PetscErrorCode,	intent(out)	    ::	ierr
+    call MatScale(X,a,ierr)
+end subroutine
+
+
+! -----------------------------------------------------------------------
+! B=fun(A,opt) 
+! opt options: exp,log,sin,cos,tan
+! -----------------------------------------------------------------------
+subroutine mat_math(A,opt,B,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+#include "mat_math_type.h"
+	Mat,			intent(in)	::  A
+	Integer,        intent(in)  ::  opt
+	Mat,			intent(out)	::	B
+	PetscErrorCode,	intent(out)	::	ierr
+    
+	PetscInt					::	nrow,ncol
+	PetscInt					::	col,m
+	PetscInt,allocatable        ::	idxn(:),idxtmp(:)
+	PetscScalar,allocatable     ::	row(:),rowtmp(:)
+	PetscInt					::  ista,iend
+	integer						::	i,j
+    PetscScalar                 ::  newval 
+    
+    call MatGetSize(A,nrow,ncol,ierr)
+
+    call mat_create(B,nrow,ncol,ierr)
 	
-    call mat_trans(X,W,ierr)
-    call mat_mult(W,Y,B,ierr)
-    call mat_destroy(W,ierr)
+    call MatGetOwnershipRange(A,ista,iend,ierr)
+	    
+    do i=ista,iend-1
+        call MatGetRow(A,i,col,PETSC_NULL_INTEGER,PETSC_NULL_SCALAR,ierr)
+        m=col
+        call MatRestoreRow(A,i,col,PETSC_NULL_INTEGER,PETSC_NULL_SCALAR,ierr)
+        
+        allocate(idxn(m),idxtmp(m),row(m),rowtmp(m))
+
+        call MatGetRow(A,i,col,idxtmp,rowtmp,ierr)
+        m=col
+        idxn=idxtmp
+        do j=1,m
+            select case(opt)
+                case (MAT_MATH_EXP)
+                    row=exp(rowtmp)
+                case (MAT_MATH_SQRT)
+                    row=sqrt(rowtmp)
+                case (MAT_MATH_LOG)
+                    row=log(rowtmp)
+                case (MAT_MATH_SIN)
+                    row=sin(rowtmp)
+                case (MAT_MATH_COS)
+                    row=cos(rowtmp)
+                case (MAT_MATH_TAN)
+                    row=tan(rowtmp)
+                case default
+                    newval=0.0    
+            end select
+        enddo
+        call MatRestoreRow(A,i,col,idxtmp,rowtmp,ierr)
+
+    	!print *,">i=",i,"idxn=",idxn,"row=",row
+    	call MatSetValues(B,1,i,m,idxn,row,INSERT_VALUES,ierr)
+        deallocate(idxn,idxtmp,row,rowtmp)
+	enddo
+
+	call MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY,ierr)
+	call MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY,ierr)
 end subroutine
 
 

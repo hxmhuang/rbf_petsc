@@ -1,5 +1,6 @@
 #include <petsc/finclude/petscsysdef.h>
 #include <petsc/finclude/petscvecdef.h>
+#include "mat_math_type.h"
 
 module	rbf 
 	
@@ -129,9 +130,9 @@ subroutine rbf_distancematrix(dsites,ctrs,dm,ierr)
 	Mat,			intent(in)	   	:: dsites,ctrs
 	Mat,			intent(out)     :: dm
 	PetscErrorCode,	intent(out)	    :: ierr
-	Mat                     		:: W1,W2,W3,W4 
+	Mat                     		:: W1,W2,W3 
 	Mat                     		:: P1,P2,P3 
-	PetscInt	            		:: nrow1,ncol1,nrow2,ncol2,ista,iend	
+	PetscInt	            		:: nrow1,ncol1,nrow2,ncol2
 	PetscScalar						:: alpha
 
 	PetscMPIInt		myrank,mysize
@@ -169,19 +170,17 @@ subroutine rbf_distancematrix(dsites,ctrs,dm,ierr)
 	
 	alpha=1.0
 	call mat_axpy(P1,alpha,P3,ierr)	
-   
-	call mat_copy(P1,dm,ierr) 
+    
+    call mat_math(P1,MAT_MATH_SQRT,dm,ierr)
 	!if(myrank==0) print *, ">dm="
 	!call mat_view(dm,ierr)
 
 	call mat_destroy(W1,ierr)
     call mat_destroy(W2,ierr)
     call mat_destroy(W3,ierr)
-    
 	call mat_destroy(P1,ierr)
     call mat_destroy(P2,ierr)
     call mat_destroy(P3,ierr)
-
 end subroutine
 
 

@@ -7,6 +7,7 @@ program main
     use rbf 
     implicit none
 
+#include "mat_math_type.h"
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscviewer.h>
 #include <petsc/finclude/petscvec.h>
@@ -19,6 +20,7 @@ program main
     !KSP				ksp
     !PC				pc
     Mat				A,dsites,ctrs
+    Mat				W1,W2,W3
 	Vec				u,x,b,rhs
 	!PetscReal		error
 	PetscMPIInt		myrank,mysize
@@ -97,10 +99,27 @@ program main
  	endif
 	
     call mat_copy(dsites,ctrs,ierr)
-	
-	call rbf_distancematrix(dsites,ctrs,A,ierr)
+	call rbf_distancematrix(dsites,ctrs,W1,ierr)
+    if(debug) then
+	    if(myrank==0) print *, ">Distance Matrix DM="
+        call mat_view(W1,ierr)
+ 	endif
 
-	call vec_destroy(x,ierr)
+    !rbf = @(e,r) exp(-(e*r).^2); ep = 4.1;
+    call mat_eprod(W1,W1,W2,ierr)
+    alpha=-ep*ep
+    call mat_scale(W2,alpha,ierr)
+    call mat_math(W2,MAT_MATH_EXP,W3,ierr)
+    if(debug) then
+        if(myrank==0) print *, ">IM="
+        call mat_view(W3,ierr)
+ 	endif
+
+	call mat_destroy(W1,ierr)
+	call mat_destroy(W2,ierr)
+	call mat_destroy(W3,ierr)
+    
+    call vec_destroy(x,ierr)
 	call vec_destroy(b,ierr)
 	call vec_destroy(u,ierr)
 	call vec_destroy(rhs,ierr)

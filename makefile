@@ -50,12 +50,12 @@ mains:
 mainm:
 	make clean
 	make main
-	-@${MPIEXEC} -n 8 ./main -m 30 -n 30 -log_view -mat_composite_merge 
+	-@${MPIEXEC} -n 8 ./main -m 20 -n 20 -log_view -mat_composite_merge 
 
 mainb:
 	make clean
 	make main
-	-@${MPIEXEC} -n 16 ./main -m 100 -n 100 -log_view -mat_composite_merge 
+	-@${MPIEXEC} -n 16 ./main -m 50 -n 50 -log_view -mat_composite_merge 
 
 
 small:
