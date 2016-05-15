@@ -19,16 +19,17 @@ program main
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     !KSP				ksp
     !PC				pc
-    Mat				A,dsites,ctrs
-    Mat				W1,W2,W3
-	Vec				u,x,b,rhs
+    Mat				dsites,ctrs,epoints
+    !Mat				W1,W2,W3
+    Mat				DM_data,DM_eval,IM,EM
+	Vec				u,x,rhs,exact,s,norm
 	!PetscReal		error
 	PetscMPIInt		myrank,mysize
 	PetscErrorCode	ierr
 	PetscReal		ep
 	PetscInt		meval,neval,m,n
 	PetscBool		debug
-    PetscScalar     alpha	
+    PetscScalar     alpha,rmse	
 	PetscLogEvent	ievent(20)
     
     debug = .false.
@@ -36,8 +37,8 @@ program main
 	ep=4.1
 	m=3
 	n=3
-	meval=30
-	neval=30
+	meval=4
+	neval=4
 	! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	!                 Beginning of program
 	! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -77,55 +78,88 @@ program main
 
 	! generate some vectors: x,b,u
 	call vec_create(x,m*n,ierr)
-	call vec_duplicate(x,b,ierr)
 	call vec_duplicate(x,u,ierr)
 	call vec_duplicate(x,rhs,ierr)
+	
+    call vec_create(exact,meval*neval,ierr)
+	call vec_duplicate(exact,s,ierr)
+	call vec_duplicate(exact,norm,ierr)
 
 	! generate matrix A with size M*N
 	!call mat_create(A,m*n,m*n,ierr)
 	
     if(myrank==0) then 
-		print *, "==============createpoints & testfunctionD==============="
-	endif 
-	
-	call mat_create(dsites,m*n,2,ierr)
-	call rbf_createpoints(dsites,m,n,ierr)
-	call rbf_testfunctionD(dsites,rhs,ierr)
+        print *, "==============createpoints & testfunctionD==============="
+    endif 
+   
+    call mat_create(dsites,m*n,2,ierr)
+    call mat_create(epoints,meval*neval,2,ierr)
+    
+    call rbf_createpoints(dsites,m,n,ierr)
+    
+    call rbf_testfunctionD(dsites,rhs,ierr)
+    
+    call mat_copy(dsites,ctrs,ierr)
+    
+    call rbf_distancematrix(dsites,ctrs,DM_data,ierr)
+    
+    call rbf_guassian(ep,DM_data,IM,ierr)
+    
+    call mat_solve(IM,rhs,x,ierr) 
+    
+    call rbf_createpoints(epoints,meval,neval,ierr)
+    
+    call rbf_testfunctionD(epoints,exact,ierr)
+    
+    call rbf_distancematrix(epoints,ctrs,DM_eval,ierr)
+    
+    call rbf_guassian(ep,DM_eval,EM,ierr)
+    
+    call MatMult(EM,x,s,ierr)
+   
+    call VecCopy(s,norm,ierr)
+    alpha=-1.0
+    call VecAXPY(norm,alpha,exact,ierr)
+    call VecNorm(norm,NORM_2,rmse,ierr) 
+    rmse=rmse/neval
+
     if(debug) then
         if(myrank==0) print *, ">dsites="
         call mat_view(dsites,ierr)
         if(myrank==0) print *, ">rhs="
-	    call vec_view(rhs,ierr)
- 	endif
-	
-    call mat_copy(dsites,ctrs,ierr)
-	call rbf_distancematrix(dsites,ctrs,W1,ierr)
-    if(debug) then
-	    if(myrank==0) print *, ">Distance Matrix DM="
-        call mat_view(W1,ierr)
- 	endif
-
-    !rbf = @(e,r) exp(-(e*r).^2); ep = 4.1;
-    call mat_eprod(W1,W1,W2,ierr)
-    alpha=-ep*ep
-    call mat_scale(W2,alpha,ierr)
-    call mat_math(W2,MAT_MATH_EXP,W3,ierr)
-    if(debug) then
+        call vec_view(rhs,ierr)
+        if(myrank==0) print *, ">DM_data="
+        call mat_view(DM_data,ierr)
         if(myrank==0) print *, ">IM="
-        call mat_view(W3,ierr)
- 	endif
-
-	call mat_destroy(W1,ierr)
-	call mat_destroy(W2,ierr)
-	call mat_destroy(W3,ierr)
+        call mat_view(IM,ierr)
+        
+        if(myrank==0) print *, ">epoints="
+        call mat_view(epoints,ierr)
+        if(myrank==0) print *, ">exact="
+        call vec_view(exact,ierr)
+        if(myrank==0) print *, ">DM_eval="
+        call mat_view(DM_eval,ierr)
+        if(myrank==0) print *, ">EM="
+        call mat_view(EM,ierr)
+        
+        if(myrank==0) print *, ">s="
+        call vec_view(s,ierr)
+        if(myrank==0) print *, ">norm="
+        call vec_view(norm,ierr)
+        if(myrank==0) print *, ">rmse=",rmse
+    endif
     
     call vec_destroy(x,ierr)
-	call vec_destroy(b,ierr)
-	call vec_destroy(u,ierr)
-	call vec_destroy(rhs,ierr)
-	call mat_destroy(a,ierr)
-	call mat_destroy(dsites,ierr)
-	call mat_destroy(ctrs,ierr)
-	call PetscFinalize(ierr)
+    call vec_destroy(u,ierr)
+    call vec_destroy(rhs,ierr)
+    call vec_destroy(exact,ierr)
+    call mat_destroy(DM_data,ierr)
+    call mat_destroy(DM_eval,ierr)
+    call mat_destroy(IM,ierr)
+    call mat_destroy(EM,ierr)
+    call mat_destroy(dsites,ierr)
+    call mat_destroy(ctrs,ierr)
+    call PetscFinalize(ierr)
 
 end program
+   

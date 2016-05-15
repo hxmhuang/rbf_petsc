@@ -3,7 +3,7 @@
 #include "mat_math_type.h"
 
 module	rbf 
-	
+    use matrix	
 	type MyStruct
 	sequence
 	PetscScalar :: a,b,c
@@ -104,6 +104,9 @@ subroutine rbf_testfunctionD(A,v,ierr)
 		call VecSetValue(v,i,res,INSERT_VALUES,ierr)
 		call MatRestoreRow(A,i,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,row,ierr)
 	enddo
+    
+    call VecAssemblyBegin(v,ierr)
+    call VecAssemblyEnd(v,ierr)
 	deallocate(row)
 end subroutine
 
@@ -120,15 +123,15 @@ subroutine testfunction(xcord,ycord,res)
 end subroutine
 
 
-subroutine rbf_distancematrix(dsites,ctrs,dm,ierr)
+subroutine rbf_distancematrix(A1,A2,B,ierr)
 	use matrix 
 	implicit none
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
 #include <petsc/finclude/petscvec.h90>
 #include <petsc/finclude/petscmat.h>
-	Mat,			intent(in)	   	:: dsites,ctrs
-	Mat,			intent(out)     :: dm
+	Mat,			intent(in)	   	:: A1,A2
+	Mat,			intent(out)     :: B 
 	PetscErrorCode,	intent(out)	    :: ierr
 	Mat                     		:: W1,W2,W3 
 	Mat                     		:: P1,P2,P3 
@@ -139,20 +142,21 @@ subroutine rbf_distancematrix(dsites,ctrs,dm,ierr)
 	call MPI_Comm_rank(PETSC_COMM_WORLD,myrank,ierr)
 	call MPI_Comm_rank(PETSC_COMM_WORLD,mysize,ierr)
  
-	call MatGetSize(dsites,nrow1,ncol1,ierr)
-	call MatGetSize(dsites,nrow2,ncol2,ierr)
+	call MatGetSize(A1,nrow1,ncol1,ierr)
+	call MatGetSize(A2,nrow2,ncol2,ierr)
+    !print *, "nrow1=",nrow1,"nrow2=",nrow2
 	if(ncol1/=ncol2)then
 		print *, "Error in rbf_distancematrix: the matrix A1 and A2 should have the same column size."
 		stop	
 	endif
     
-    call mat_eprod(dsites,dsites,W1,ierr)
+    call mat_eprod(A1,A1,W1,ierr)
     call mat_sum(W1,2,W2,ierr)
     call mat_rep(W2,1,nrow2,P1,ierr)
 	!if(myrank==0) print *, ">P1="
 	!call mat_view(P1,ierr)
 	
-	call mat_xyt(dsites,ctrs,P2,ierr)
+	call mat_xyt(A1,A2,P2,ierr)
 	!if(myrank==0) print *, ">P2="
 	!call mat_view(P2,ierr)
 	alpha=-2.0
@@ -161,7 +165,7 @@ subroutine rbf_distancematrix(dsites,ctrs,dm,ierr)
     call mat_destroy(W1,ierr)
     call mat_destroy(W2,ierr)
 	
-	call mat_eprod(ctrs,ctrs,W1,ierr)
+	call mat_eprod(A2,A2,W1,ierr)
 	call mat_sum(W1,2,W2,ierr)
 	call mat_trans(W2,W3,ierr)
 	call mat_rep(W3,nrow1,1,P3,ierr)
@@ -171,9 +175,9 @@ subroutine rbf_distancematrix(dsites,ctrs,dm,ierr)
 	alpha=1.0
 	call mat_axpy(P1,alpha,P3,ierr)	
     
-    call mat_math(P1,MAT_MATH_SQRT,dm,ierr)
-	!if(myrank==0) print *, ">dm="
-	!call mat_view(dm,ierr)
+    call mat_math(P1,MAT_MATH_SQRT,B,ierr)
+	!if(myrank==0) print *, ">B="
+	!call mat_view(B,ierr)
 
 	call mat_destroy(W1,ierr)
     call mat_destroy(W2,ierr)
@@ -183,5 +187,26 @@ subroutine rbf_distancematrix(dsites,ctrs,dm,ierr)
     call mat_destroy(P3,ierr)
 end subroutine
 
+subroutine rbf_guassian(ep,A,B,ierr)
+!    use matrix
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+#include "mat_math_type.h"
+	PetscReal,		intent(in)		::  ep		
+	Mat,			intent(in)		::	A 
+	Mat,			intent(out)		::	B 
+	PetscErrorCode,	intent(out)		::	ierr
+    PetscScalar                     ::  alpha	
+	Mat                 			::	W
+    !rbf = @(e,r) exp(-(e*r).^2)
+    call mat_eprod(A,A,W,ierr)
+    alpha=-ep*ep
+    call mat_scale(W,alpha,ierr)
+    call mat_math(W,MAT_MATH_EXP,B,ierr)
+	call mat_destroy(W,ierr)
+end subroutine
 
 end module

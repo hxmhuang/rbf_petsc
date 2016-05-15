@@ -709,8 +709,8 @@ subroutine mat_solve(A,b,x,ierr)
 	PetscErrorCode,	intent(out)	::	ierr
     KSP                         ::  ksp
     PC                          ::  pc
-    PetscReal                   ::  norm,tol
-    PetscInt                    ::  its
+    PetscReal                   ::  tol
+    !PetscInt                    ::  its
     
     call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
     
@@ -724,8 +724,8 @@ subroutine mat_solve(A,b,x,ierr)
     !call KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD,ierr)
     !call KSPGetIterationNumber(ksp,its,ierr)
     !print *, ">Iterations number=",its 
+    call KSPDestroy(ksp,ierr)
 end subroutine
-
 
 
 end module
