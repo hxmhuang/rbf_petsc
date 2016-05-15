@@ -19,7 +19,8 @@ program test
 	!KSP				ksp
 	!PC				pc
 	Mat				A,A1,A2,B
-	!PetscReal		error
+	Vec             rhs,x
+    !PetscReal		error
 	PetscMPIInt		myrank,mysize
 	PetscErrorCode	ierr
 	PetscInt		m,n
@@ -63,7 +64,7 @@ program test
 	call PetscLogEventRegister("mat_xyt",0, ievent(15), ierr)
 	call PetscLogEventRegister("mat_xty",0, ievent(16), ierr)
 	call PetscLogEventRegister("mat_scale",0, ievent(17), ierr)
-	call PetscLogEventRegister("mat_18",0, ievent(18), ierr)
+	call PetscLogEventRegister("mat_solve",0, ievent(18), ierr)
 	call PetscLogEventRegister("mat_19",0, ievent(19), ierr)
 	call PetscLogEventRegister("mat_20",0, ievent(20), ierr)
 
@@ -369,6 +370,30 @@ call PetscLogEventEnd(ievent(9),ierr)
  	endif
  	call mat_destroy(A,ierr)	
 	call PetscLogEventEnd(ievent(17),ierr)
+
+    if(myrank==0) print *, "==============Test mat_solve=============="
+    call PetscLogEventBegin(ievent(18),ierr)
+ 	call mat_seq(A,m,m,ierr)
+    call vec_create(rhs,m,ierr)
+    call vec_create(x,m,ierr)
+    alpha=1.0
+    call VecSet(rhs,alpha,ierr)
+    if(debug) then
+        if(myrank==0) print *, ">A="
+        call mat_view(A,ierr)
+        if(myrank==0) print *, ">rhs="
+        call vec_view(rhs,ierr)
+ 	endif
+
+    call mat_solve(A,rhs,x,ierr)
+    if(debug) then
+        if(myrank==0) print *, ">x="
+        call vec_view(x,ierr)
+ 	endif
+ 	call mat_destroy(A,ierr)	
+ 	call vec_destroy(rhs,ierr)	
+ 	call vec_destroy(x,ierr)	
+	call PetscLogEventEnd(ievent(18),ierr)
 
 
 

@@ -694,4 +694,38 @@ subroutine mat_view(A,ierr)
 	call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr)
 end subroutine
 
+
+subroutine mat_solve(A,b,x,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+#include <petsc/finclude/petscksp.h>
+#include <petsc/finclude/petscpc.h>
+	Mat,			intent(in)	::	A
+	Vec,			intent(in)	::	b
+	Vec,			intent(out)	::	x
+	PetscErrorCode,	intent(out)	::	ierr
+    KSP                         ::  ksp
+    PC                          ::  pc
+    PetscReal                   ::  norm,tol
+    PetscInt                    ::  its
+    
+    call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
+    
+    call KSPSetOperators(ksp,A,A,ierr)
+    call KSPGetPC(ksp,pc,ierr)
+    call PCSetType(pc,PCJACOBI,ierr)
+    tol = 1.0e-15
+    call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr)
+    call KSPSetFromOptions(ksp,ierr)
+    call KSPSolve(ksp,b,x,ierr)
+    !call KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD,ierr)
+    !call KSPGetIterationNumber(ksp,its,ierr)
+    !print *, ">Iterations number=",its 
+end subroutine
+
+
+
 end module
