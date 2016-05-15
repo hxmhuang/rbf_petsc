@@ -626,7 +626,7 @@ subroutine mat_math(A,opt,B,ierr)
     call MatGetSize(A,nrow,ncol,ierr)
 
     call mat_create(B,nrow,ncol,ierr)
-	
+    
     call MatGetOwnershipRange(A,ista,iend,ierr)
 	    
     do i=ista,iend-1
@@ -654,12 +654,19 @@ subroutine mat_math(A,opt,B,ierr)
                 case (MAT_MATH_TAN)
                     row=tan(rowtmp)
                 case default
-                    newval=0.0    
+                    row=0.0    
             end select
         enddo
+        do j=1,m
+            !Maybe there is a potenial bug here. When rowtmp < 1E-16, exp(rowtmp) will be NaN. 
+            !To avoid this, we have to set row=0.0 at his situation.
+            if(isnan(row(j))) row(j)=0.0
+    	    !print *,"------rowtmp(",j,")=",rowtmp(j),"row(",j,")=",row(j)
+        enddo
+        
         call MatRestoreRow(A,i,col,idxtmp,rowtmp,ierr)
-
-    	!print *,">i=",i,"idxn=",idxn,"row=",row
+    	
+        !print *,">i=",i,"idxn=",idxn,"row=",row
     	call MatSetValues(B,1,i,m,idxn,row,INSERT_VALUES,ierr)
         deallocate(idxn,idxtmp,row,rowtmp)
 	enddo

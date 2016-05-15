@@ -175,6 +175,7 @@ subroutine rbf_distancematrix(A1,A2,B,ierr)
 	alpha=1.0
 	call mat_axpy(P1,alpha,P3,ierr)	
     
+    
     call mat_math(P1,MAT_MATH_SQRT,B,ierr)
 	!if(myrank==0) print *, ">B="
 	!call mat_view(B,ierr)

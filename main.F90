@@ -34,7 +34,7 @@ program main
     
     debug = .false.
     alpha=1.0
-	ep=4.1
+	ep=6.1
 	m=3
 	n=3
 	meval=4
@@ -47,8 +47,11 @@ program main
 	call MPI_Comm_rank(PETSC_COMM_WORLD,myrank,ierr)
 	call MPI_Comm_rank(PETSC_COMM_WORLD,mysize,ierr)
  
+    call PetscOptionsGetReal(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-ep',ep,PETSC_NULL_BOOL,ierr)
     call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-m',m,PETSC_NULL_BOOL,ierr)
     call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-n',n,PETSC_NULL_BOOL,ierr)
+    call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-meval',meval,PETSC_NULL_BOOL,ierr)
+    call PetscOptionsGetInt(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-neval',neval,PETSC_NULL_BOOL,ierr)
     call PetscOptionsGetBool(PETSC_NULL_OBJECT,PETSC_NULL_CHARACTER,'-debug',debug,PETSC_NULL_BOOL,ierr)
     if(myrank==0) then 
         print *, "============Input paramenters============"
@@ -88,10 +91,6 @@ program main
 	! generate matrix A with size M*N
 	!call mat_create(A,m*n,m*n,ierr)
 	
-    if(myrank==0) then 
-        print *, "==============createpoints & testfunctionD==============="
-    endif 
-   
     call mat_create(dsites,m*n,2,ierr)
     call mat_create(epoints,meval*neval,2,ierr)
     
@@ -121,7 +120,12 @@ program main
     alpha=-1.0
     call VecAXPY(norm,alpha,exact,ierr)
     call VecNorm(norm,NORM_2,rmse,ierr) 
+        
     rmse=rmse/neval
+    
+    !if(myrank==0) print *, ">DM_eval="
+    !call mat_view(DM_eval,ierr)
+    !call vec_view(exact,ierr)
 
     if(debug) then
         if(myrank==0) print *, ">dsites="
@@ -146,8 +150,12 @@ program main
         call vec_view(s,ierr)
         if(myrank==0) print *, ">norm="
         call vec_view(norm,ierr)
-        if(myrank==0) print *, ">rmse=",rmse
     endif
+    
+    if(myrank==0) then 
+        print *, "================Output================="
+        if(myrank==0) print *, ">rmse=",rmse
+     endif 
     
     call vec_destroy(x,ierr)
     call vec_destroy(u,ierr)
@@ -165,4 +173,3 @@ program main
     call PetscFinalize(ierr)
 
 end program
-   

@@ -45,17 +45,17 @@ test: ${OBJTEST}  chkopts
 mains:
 	make clean
 	make main
-	-@${MPIEXEC} -n 4 ./main -m 3 -n 3 -debug -mat_composite_merge 
+	-@${MPIEXEC} -n 4 ./main -ep 6.1 -m 3 -n 3 -meval 4 -neval 4 -debug -mat_composite_merge 
 
 mainm:
 	make clean
 	make main
-	-@${MPIEXEC} -n 8 ./main -m 20 -n 20 -log_view -mat_composite_merge 
+	-@${MPIEXEC} -n 8 ./main -ep 6.1 -m 14 -n 14 -meval 40 -neval 40 -log_view -mat_composite_merge 
 
 mainb:
 	make clean
 	make main
-	-@${MPIEXEC} -n 16 ./main -m 50 -n 50 -log_view -mat_composite_merge 
+	-@${MPIEXEC} -n 16 ./main -ep 6.1 -m 30 -n 30 -meval 50 -neval 50 -log_view -mat_composite_merge 
 
 
 small:
@@ -71,7 +71,7 @@ middle:
 big:
 	make clean
 	make test 
-	-@${MPIEXEC} -n 16 ./test -m 900 -n 900 -log_view -mat_composite_merge 
+	-@${MPIEXEC} -n 16 ./test -m 1000 -n 1000 -log_view -mat_composite_merge 
 
 smalljob:
 	make clean
