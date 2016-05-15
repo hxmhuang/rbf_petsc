@@ -1,0 +1,11 @@
+#!/bin/sh 
+#PBS -N rbf_main 
+#PBS -q hpcb 
+#PBS -l nodes=10:ppn=28
+#PBS -r n
+#PBS -j oe
+#PBS -S /bin/bash
+
+cd $PBS_O_WORKDIR
+
+mpirun -np 280 ./main -ep 6.1 -m 200 -n 200 -meval 300 -neval 300 -log_view -mat_composite_merge 2>&1 | tee job_mainb.log  

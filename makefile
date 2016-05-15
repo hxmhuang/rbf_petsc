@@ -73,24 +73,30 @@ big:
 	make test 
 	-@${MPIEXEC} -n 16 ./test -m 1000 -n 1000 -log_view -mat_composite_merge 
 
-smalljob:
-	make clean
-	make test
-	qsub job_small.job 
+testsjob:
+	qsub job_tests.job 
 
-middlejob:
-	make clean
-	make test
-	qsub job_middle.job 
+testmjob:
+	qsub job_testm.job 
 
-bigjob:
-	make clean
-	make test
-	qsub job_big.job 
+testbjob:
+	qsub job_testb.job 
 
-hugejob:
-	make clean
-	make test
-	qsub job_huge.job 
+testhjob:
+	qsub job_testh.job 
+
+mainsjob:
+	qsub job_mains.job 
+
+mainmjob:
+	qsub job_mainm.job 
+
+mainbjob:
+	qsub job_mainb.job 
+
+mainhjob:
+	qsub job_mainh.job 
+
+
 
 #include ${PETSC_DIR}/lib/petsc/conf/test
