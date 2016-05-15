@@ -153,12 +153,15 @@ program main
     call vec_destroy(u,ierr)
     call vec_destroy(rhs,ierr)
     call vec_destroy(exact,ierr)
+    call vec_destroy(s,ierr)
+    call vec_destroy(norm,ierr)
     call mat_destroy(DM_data,ierr)
     call mat_destroy(DM_eval,ierr)
     call mat_destroy(IM,ierr)
     call mat_destroy(EM,ierr)
     call mat_destroy(dsites,ierr)
     call mat_destroy(ctrs,ierr)
+    call mat_destroy(epoints,ierr)
     call PetscFinalize(ierr)
 
 end program
