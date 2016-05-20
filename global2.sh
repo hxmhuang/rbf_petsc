@@ -8,7 +8,7 @@ set level=0
 foreach ksptype (gmres)
 	foreach pctype (asm)
 		foreach subpctype (ilu)
-#			if ( $subpctype==ilu ) then
+			if ( $subpctype == ilu ) then
  				foreach level (0)
  					echo "********Beginning new run*********"
  					echo $ksptype $pctype $subpctype
@@ -32,7 +32,7 @@ foreach ksptype (gmres)
 #					#-ksp_monitor -sles_view -optionsleft \
 #					-ksp_monitor -sles_view -optionsleft 
 #					2>&1 | tee log_$ksptype_$pctype_$subpctype.log 
-#			endif
+			endif
 		end
 	end
 end
