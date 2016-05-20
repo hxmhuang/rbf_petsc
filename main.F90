@@ -94,26 +94,36 @@ program main
     call mat_create(dsites,m*n,2,ierr)
     call mat_create(epoints,meval*neval,2,ierr)
     
+    if(myrank==0) print *, ">rbf_creatpoints"
     call rbf_createpoints(dsites,m,n,ierr)
     
+    if(myrank==0) print *, ">rbf_testfunctionsD"
     call rbf_testfunctionD(dsites,rhs,ierr)
     
     call mat_copy(dsites,ctrs,ierr)
     
+    if(myrank==0) print *, ">rbf_distancematrix"
     call rbf_distancematrix(dsites,ctrs,DM_data,ierr)
     
+    if(myrank==0) print *, ">rbf_guassian"
     call rbf_guassian(ep,DM_data,IM,ierr)
     
+    if(myrank==0) print *, ">mat_solve"
     call mat_solve(IM,rhs,x,ierr) 
     
+    if(myrank==0) print *, ">rbf_createpoints"
     call rbf_createpoints(epoints,meval,neval,ierr)
     
+    if(myrank==0) print *, ">rbf_testfunctionD"
     call rbf_testfunctionD(epoints,exact,ierr)
     
+    if(myrank==0) print *, ">rbf_distancematrix"
     call rbf_distancematrix(epoints,ctrs,DM_eval,ierr)
     
+    if(myrank==0) print *, ">rbf_guassian"
     call rbf_guassian(ep,DM_eval,EM,ierr)
     
+    if(myrank==0) print *, ">MatMult"
     call MatMult(EM,x,s,ierr)
    
     call VecCopy(s,norm,ierr)
