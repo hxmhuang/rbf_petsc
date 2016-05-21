@@ -9,6 +9,7 @@ NP               = 1
 OBJ				 = matrix.o vector.o rbf.o  
 OBJMAIN			 = ${OBJ} main.o 
 OBJTEST			 = ${OBJ} test.o 
+PETSCFLAG        =-ksp_type bcgs -pc_type bjacobi -sub_ksp_type preonly -sub_pc_type sor
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
@@ -45,33 +46,38 @@ test: ${OBJTEST}  chkopts
 mains:
 	make clean
 	make main
-	-@${MPIEXEC} -n 4 ./main -ep 6.1 -m 3 -n 3 -meval 4 -neval 4 -debug -mat_composite_merge 
+	-@${MPIEXEC} -n 4 ./main -ep 6.1 -m 3 -n 3 -meval 4 -neval 4 -debug -mat_composite_merge -ksp_type bcgs -pc_type bjacobi -sub_ksp_type preonly -sub_pc_type sor
 
 mainm:
 	make clean
 	make main
-	-@${MPIEXEC} -n 8 ./main -ep 6.1 -m 14 -n 14 -meval 40 -neval 40 -log_view -mat_composite_merge 
+	-@${MPIEXEC} -n 8 ./main -ep 6.1 -m 14 -n 14 -meval 40 -neval 40 -log_view -mat_composite_merge -ksp_type bcgs -pc_type bjacobi -sub_ksp_type preonly -sub_pc_type sor
 
 mainb:
 	make clean
 	make main
-	-@${MPIEXEC} -n 16 ./main -ep 6.1 -m 30 -n 30 -meval 50 -neval 50 -log_view -mat_composite_merge 
+	-@${MPIEXEC} -n 16 ./main -ep 6.1 -m 30 -n 30 -meval 50 -neval 50 -log_view -mat_composite_merge -ksp_type bcgs -pc_type bjacobi -sub_ksp_type preonly -sub_pc_type sor
+
+mainh:
+	make clean
+	make main
+	-@${MPIEXEC} -n 16 ./main -ep 6.1 -m 40 -n 40 -meval 50 -neval 50 -log_view -mat_composite_merge -ksp_type bcgs -pc_type bjacobi -sub_ksp_type preonly -sub_pc_type sor
 
 
 small:
 	make clean
 	make test 
-	-@${MPIEXEC} -n 4 ./test -m 3 -n 2 -debug -mat_composite_merge  
+	-@${MPIEXEC} -n 4 ./test -m 3 -n 2 -debug -mat_composite_merge -ksp_type bcgs -pc_type bjacobi -sub_ksp_type preonly -sub_pc_type sor
 
 middle:
 	make clean
 	make test 
-	-@${MPIEXEC} -n 8 ./test -m 100 -n 100 -log_view -mat_composite_merge 
+	-@${MPIEXEC} -n 8 ./test -m 100 -n 100 -log_view -mat_composite_merge -ksp_type bcgs -pc_type bjacobi -sub_ksp_type preonly -sub_pc_type sor
 
 big:
 	make clean
 	make test 
-	-@${MPIEXEC} -n 16 ./test -m 1000 -n 1000 -log_view -mat_composite_merge 
+	-@${MPIEXEC} -n 16 ./test -m 1000 -n 1000 -log_view -mat_composite_merge -ksp_type bcgs -pc_type bjacobi -sub_ksp_type preonly -sub_pc_type sor
 
 testsjob:
 	qsub job_tests.job 

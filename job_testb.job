@@ -8,4 +8,4 @@
 
 cd $PBS_O_WORKDIR
 
-mpirun -np 280 ./test -m 3600 -n 1800 -log_view -mat_composite_merge 2>&1 | tee job_testb.log  
+mpirun -np 280 ./test -m 3600 -n 1800 -log_view -mat_composite_merge -ksp_type bcgs -pc_type bjacobi -sub_ksp_type preonly -sub_pc_type sor 2>&1 | tee job_testb.log  
