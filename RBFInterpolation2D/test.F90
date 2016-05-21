@@ -398,7 +398,7 @@ call PetscLogEventEnd(ievent(9),ierr)
 
 	if(myrank==0) print *, "==============Test mat_math=============="
     call PetscLogEventBegin(ievent(19),ierr)
-	m=30
+	!m=10
  	call mat_seq(A,m*m,m*m,ierr)
     call mat_math(A,MAT_MATH_SQRT,B,ierr)
 	if(debug) then
