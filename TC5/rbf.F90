@@ -151,7 +151,7 @@ subroutine rbf_distancematrix(A1,A2,B,ierr)
 	call PetscLogEventRegister("9_dm_trans",0, ievent(9), ierr)
 	call PetscLogEventRegister("10_dm_rep",0, ievent(10), ierr)
 	call PetscLogEventRegister("11_dm_axpy",0, ievent(11), ierr)
-	call PetscLogEventRegister("12_dm_math_sqrt",0, ievent(12), ierr)
+	call PetscLogEventRegister("12_dm_copy",0, ievent(12), ierr)
 	call PetscLogEventRegister("13_dm_destroy",0, ievent(13), ierr)
 
     call MPI_Comm_rank(PETSC_COMM_WORLD,myrank,ierr)
@@ -214,10 +214,12 @@ subroutine rbf_distancematrix(A1,A2,B,ierr)
 	call mat_axpy(P1,alpha,P3,ierr)	
 	call PetscLogEventEnd(ievent(11),ierr)
     
-    
 	call PetscLogEventBegin(ievent(12),ierr)
-    call mat_math(P1,MAT_MATH_SQRT,B,ierr)
+    call mat_copy(P1,B,ierr) 
 	call PetscLogEventEnd(ievent(12),ierr)
+	!call PetscLogEventBegin(ievent(12),ierr)
+    !call mat_math(P1,MAT_MATH_SQRT,B,ierr)
+	!call PetscLogEventEnd(ievent(12),ierr)
 	!if(myrank==0) print *, ">B="
 	!call mat_view(B,ierr)
 
@@ -231,6 +233,7 @@ subroutine rbf_distancematrix(A1,A2,B,ierr)
 	call PetscLogEventEnd(ievent(13),ierr)
 end subroutine
 
+!A=r^2
 subroutine rbf_guassian(ep,A,B,ierr)
 !    use matrix
 	implicit none
@@ -246,11 +249,278 @@ subroutine rbf_guassian(ep,A,B,ierr)
     PetscScalar                     ::  alpha	
 	Mat                 			::	W
     !rbf = @(e,r) exp(-(e*r).^2)
-    call mat_eprod(A,A,W,ierr)
+    call mat_copy(A,W,ierr)
     alpha=-ep*ep
     call mat_scale(W,alpha,ierr)
     call mat_math(W,MAT_MATH_EXP,B,ierr)
 	call mat_destroy(W,ierr)
 end subroutine
+
+! -----------------------------------------------------------------------
+! Transform Cartesian to spherical coordinates.
+! [TH,PHI,R] = cart2sph(X,Y,Z) transforms corresponding elements of
+!    data stored in Cartesian coordinates X,Y,Z to spherical
+!    coordinates (azimuth TH, elevation PHI, and radius R).
+!    TH and PHI are returned in radians.
+! where,
+!   azimuth = atan2(y,x)
+!   elevation = atan2(z,sqrt(x.^2 + y.^2))
+!   r = sqrt(x.^2 + y.^2 + z.^2)
+! -----------------------------------------------------------------------
+subroutine rbf_cart2sph(A,B,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+#include "mat_math_type.h"
+	Mat,			intent(in)	::  A
+	Mat,			intent(out)	::	B
+	PetscErrorCode,	intent(out)	::	ierr
+    
+	PetscInt					::	nrow1,ncol1,nrow2,ncol2
+	PetscInt,allocatable        ::	idx1(:),idx2(:)
+	PetscScalar,allocatable     ::	row1(:),row2(:)
+	PetscInt					::  ista,iend
+	integer						::	i,j
+    PetscScalar                 ::  newval 
+    
+    call MatGetSize(A,nrow1,ncol1,ierr)
+    call MatGetOwnershipRange(A,ista,iend,ierr)
+   
+    nrow2=nrow1
+    ncol2=3
+    call mat_create(B,nrow2,ncol2,ierr)
+    allocate(idx1(ncol1),idx2(ncol2),row1(ncol1),row2(ncol2))
+    
+    do i=ista,iend-1
+        do j=1,ncol1
+            idx1(j)=j-1
+        enddo
+        do j=1,ncol2
+            idx2(j)=j-1
+        enddo
+        
+        call MatGetRow(A,i,ncol1,idx1,row1,ierr)
+        row2(1) = atan2(row1(2),row1(1)) 
+        row2(2) = atan2(row1(3),sqrt(row1(1)**2+row1(2)**2))
+        row2(3) = sqrt(row1(1)**2+row1(2)**2+row1(3)**2) 
+        call MatRestoreRow(A,i,ncol1,idx1,row1,ierr)
+        
+    	call MatSetValues(B,1,i,ncol2,idx2,row2,INSERT_VALUES,ierr)
+	enddo
+    
+    deallocate(idx1,idx2,row1,row2)
+    call MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY,ierr)
+	call MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY,ierr)
+end subroutine
+
+
+
+
+! -----------------------------------------------------------------------
+! Variables for projecting an arbitrary Cartesian vector onto the surface of the sphere.
+! -----------------------------------------------------------------------
+subroutine rbf_project_cart2sph(A,PX,PY,PZ,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+#include "mat_math_type.h"
+	Mat,			intent(in)	::  A
+	Mat,			intent(out)	::  PX,PY,PZ	
+	PetscErrorCode,	intent(out)	::	ierr
+    
+	PetscInt					::	nrow1,ncol1,nrow2,ncol2
+	PetscInt,allocatable        ::	idx1(:),idx2(:)
+	PetscScalar,allocatable     ::	row1(:),row2(:),row3(:),row4(:)
+	PetscInt					::  ista,iend
+	integer						::	i,j
+    PetscScalar                 ::  x2,xy,y2,xz,z2,yz
+
+    call MatGetSize(A,nrow1,ncol1,ierr)
+    call MatGetOwnershipRange(A,ista,iend,ierr)
+  
+    !if(ncol /= 3) then
+	!	print *, "Error in mat_project_cart2sph: the column of matrix A should be 3" 
+	!	stop	
+    !endif
+    nrow2=nrow1
+    ncol2=3
+    call mat_create(PX,nrow2,ncol2,ierr)
+    call mat_create(PY,nrow2,ncol2,ierr)
+    call mat_create(PZ,nrow2,ncol2,ierr)
+
+    allocate(idx1(ncol1),idx2(ncol2),row1(ncol1),row2(ncol2))
+    
+    do i=ista,iend-1
+        do j=1,ncol1
+            idx1(j)=j-1
+        enddo
+        do j=1,ncol2
+            idx2(j)=j-1
+        enddo
+        
+        call MatGetRow(A,i,ncol1,idx1,row1,ierr)
+       
+        x2=row1(1)**2
+        y2=row1(2)**2
+        z2=row1(3)**2
+        xy=row1(1)*row1(2)
+        xz=row1(1)*row1(3)
+        yz=row1(2)*row1(3)
+        call MatRestoreRow(A,i,ncol1,idx1,row1,ierr)
+        
+        row2(1)= 1-x2
+        row2(2)= -xy
+        row2(3)= -xz
+    	call MatSetValues(PX,1,i,ncol2,idx2,row2,INSERT_VALUES,ierr)
+        !print *,"PXrow2=", row2
+        
+        row2(1)= -xy 
+        row2(2)= 1-y2
+        row2(3)= -yz
+    	call MatSetValues(PY,1,i,ncol2,idx2,row2,INSERT_VALUES,ierr)
+        !print *,"PYrow3=", row3
+ 
+        row2(1)= -xz 
+        row2(2)= -yz
+        row2(3)= 1-z2
+    	call MatSetValues(PZ,1,i,ncol2,idx2,row2,INSERT_VALUES,ierr)
+        !print *,"PZrow4=", row4
+
+	enddo
+    
+    call MatAssemblyBegin(PX,MAT_FINAL_ASSEMBLY,ierr)
+	call MatAssemblyEnd(PX,MAT_FINAL_ASSEMBLY,ierr)
+    call MatAssemblyBegin(PY,MAT_FINAL_ASSEMBLY,ierr)
+	call MatAssemblyEnd(PY,MAT_FINAL_ASSEMBLY,ierr)
+    call MatAssemblyBegin(PZ,MAT_FINAL_ASSEMBLY,ierr)
+	call MatAssemblyEnd(PZ,MAT_FINAL_ASSEMBLY,ierr)
+    deallocate(idx1,idx2,row1,row2)
+end subroutine
+
+
+! -----------------------------------------------------------------------
+! Compute the coriolis force of each point in A. The angle is the rotation measured from the equator.
+! -----------------------------------------------------------------------
+subroutine rbf_coriolis_force(A,angle,B,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+#include "mat_math_type.h"
+	Mat,			intent(in)	::  A
+	PetscReal,      intent(in)  ::  angle	
+	Mat,			intent(out)	::  B
+	PetscErrorCode,	intent(out)	::	ierr
+    
+	PetscInt					::	nrow1,ncol1,nrow2,ncol2
+	PetscInt,allocatable        ::	idx1(:),idx2(:)
+	PetscScalar,allocatable     ::	row1(:),row2(:),row3(:),row4(:)
+	PetscInt					::  ista,iend
+	PetscReal                   ::  omega
+    integer						::	i,j
+
+    call MatGetSize(A,nrow1,ncol1,ierr)
+    call MatGetOwnershipRange(A,ista,iend,ierr)
+  
+    nrow2=nrow1
+    ncol2=1
+    omega=7.292e-5  ! Rotation rate of the earth (1/seconds).
+    call mat_create(B,nrow2,ncol2,ierr)
+
+    allocate(idx1(ncol1),idx2(ncol2),row1(ncol1),row2(ncol2))
+    
+    do i=ista,iend-1
+        do j=1,ncol1
+            idx1(j)=j-1
+        enddo
+        do j=1,ncol2
+            idx2(j)=j-1
+        enddo
+        
+        call MatGetRow(A,i,ncol1,idx1,row1,ierr)
+       
+        row2(1)= 2*omega*(row1(1)*sin(angle)+row1(3)*cos(angle))
+        call MatRestoreRow(A,i,ncol1,idx1,row1,ierr)
+    	
+        call MatSetValues(B,1,i,ncol2,idx2,row2,INSERT_VALUES,ierr)
+        
+	enddo
+    
+    call MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY,ierr)
+	call MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY,ierr)
+    deallocate(idx1,idx2,row1,row2)
+end subroutine
+
+
+! -----------------------------------------------------------------------
+! Compute the profile of the mountain (multiplied by gravity) 
+! -----------------------------------------------------------------------
+subroutine rbf_mountain_profile(A,B,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+#include "mat_math_type.h"
+	Mat,			intent(in)	::  A
+	Mat,			intent(out)	::  B
+	PetscErrorCode,	intent(out)	::	ierr
+    
+	PetscInt					::	nrow1,ncol1,nrow2,ncol2
+	PetscInt,allocatable        ::	idx1(:),idx2(:)
+	PetscScalar,allocatable     ::	row1(:),row2(:),row3(:),row4(:)
+	PetscInt					::  ista,iend
+	PetscReal                   ::  omega
+    integer						::	i,j
+    PetscReal		            ::  pi,lam_c,thm_c,mR,hm0,r2,g
+    PetscScalar     alpha
+    
+    !Parameters for the mountain:
+    alpha=1.0
+    pi=4*atan(alpha)
+    lam_c = -pi/2;
+    thm_c = pi/6;
+    mR = pi/9;
+    hm0 = 2000;
+    g = 9.80616       ! Gravitational constant (m/s^2).
+ 
+    call MatGetSize(A,nrow1,ncol1,ierr)
+    call MatGetOwnershipRange(A,ista,iend,ierr)
+  
+    nrow2=nrow1
+    ncol2=1
+    call mat_zeros(B,nrow2,ncol2,ierr)
+
+    allocate(idx1(ncol1),idx2(ncol2),row1(ncol1),row2(ncol2))
+   
+    do i=ista,iend-1
+        do j=1,ncol1
+            idx1(j)=j-1
+        enddo
+        do j=1,ncol2
+            idx2(j)=j-1
+        enddo
+        
+        call MatGetRow(A,i,ncol1,idx1,row1,ierr)
+       
+        r2= (row1(1)-lam_c)**2+(row1(2)-thm_c)**2
+        call MatRestoreRow(A,i,ncol1,idx1,row1,ierr)
+        if(r2 < mR**2) then
+            row2(1)=g*hm0*(1-sqrt(r2)/mR)
+            call MatSetValues(B,1,i,ncol2,idx2,row2,INSERT_VALUES,ierr)
+        endif
+	enddo
+    
+    call MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY,ierr)
+	call MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY,ierr)
+    deallocate(idx1,idx2,row1,row2)
+end subroutine
+
+
 
 end module

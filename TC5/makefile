@@ -46,7 +46,7 @@ test: ${OBJTEST}  chkopts
 mains:
 	make clean
 	make main
-	-@${MPIEXEC} -n 4 ./main -ep 6.1 -m 3 -n 3 -meval 4 -neval 4 -debug -mat_composite_merge -ksp_type bcgs -pc_type bjacobi -sub_ksp_type preonly -sub_pc_type sor
+	-@${MPIEXEC} -n 4 ./main -debug
 
 mainm:
 	make clean

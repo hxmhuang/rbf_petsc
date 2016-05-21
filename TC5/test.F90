@@ -19,7 +19,8 @@ program test
 	! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	!KSP				ksp
 	!PC				pc
-	Mat				A,A1,A2,B
+	Mat				A,A1,A2,B,C
+	Mat				PX,PY,PZ
 	Vec             rhs,x
     !PetscReal		error
 	PetscMPIInt		myrank,mysize
@@ -27,7 +28,8 @@ program test
 	PetscInt		m,n
 	PetscBool		debug
     PetscScalar     alpha	
-	PetscLogEvent	ievent(20)
+	PetscLogEvent	ievent(30)
+    character*100   filename 
  	m=2
  	n=3
     debug = .false.
@@ -67,349 +69,448 @@ program test
 	call PetscLogEventRegister("mat_scale",0, ievent(17), ierr)
 	call PetscLogEventRegister("mat_solve",0, ievent(18), ierr)
 	call PetscLogEventRegister("mat_math",0, ievent(19), ierr)
-	call PetscLogEventRegister("mat_20",0, ievent(20), ierr)
+	call PetscLogEventRegister("mat_load",0, ievent(20), ierr)
+	call PetscLogEventRegister("rbf_cart2sph",0, ievent(21), ierr)
+	call PetscLogEventRegister("rbf_projection_cart2sph",0, ievent(22), ierr)
+	call PetscLogEventRegister("rbf_coriolis_force",0, ievent(23), ierr)
 
 
- 	if(myrank==0) print *, "==============Test mat_zeros==============="
-	call PetscLogEventBegin(ievent(1),ierr)
-    call mat_zeros(A,m,n,ierr)
+!	if(myrank==0) print *, "==============Test mat_zeros==============="
+!   call PetscLogEventBegin(ievent(1),ierr)
+!   call mat_zeros(A,m,n,ierr)
+!   if(debug) then
+!       if(myrank==0) print *, ">A="
+!       call mat_view(A,ierr)
+!	endif
+!	call mat_destroy(A,ierr)	
+!   call PetscLogEventEnd(ievent(1),ierr)
+
+!	if(myrank==0) print *, "==============Test mat_ones==============="
+!   call PetscLogEventBegin(ievent(2),ierr)
+!	call mat_ones(A,m,n,ierr)
+!   if(debug) then
+!       if(myrank==0) print *, ">A="
+!       call mat_view(A,ierr)
+!	endif
+!	call mat_destroy(A,ierr)	
+!   call PetscLogEventEnd(ievent(2),ierr)
+
+!	if(myrank==0) print *, "==============Test mat_seq==============="
+!   call PetscLogEventBegin(ievent(3),ierr)
+!	call mat_seq(A,m,n,ierr)
+!   if(debug) then
+!       if(myrank==0) print *, ">A="
+!       call mat_view(A,ierr)
+!	endif
+!	call mat_destroy(A,ierr)	
+!   call PetscLogEventEnd(ievent(3),ierr)
+! 
+!   if(myrank==0) print *, "==============Test mat_eye==============="
+!   call PetscLogEventBegin(ievent(4),ierr)
+!   call mat_eye(A,m,m,ierr)	
+!   if(debug) then
+!       if(myrank==0) print *, ">A="
+!       call mat_view(A,ierr)
+!	endif
+!   call mat_destroy(A,ierr)	
+
+!	call mat_eye(A,m,2*m,ierr)	
+!   if(debug) then
+!       if(myrank==0) print *, ">A="
+!       call mat_view(A,ierr)
+!	endif
+!	call mat_destroy(A,ierr)	
+
+!  	call mat_eye(A,2*m,m,ierr)	
+!   if(debug) then
+!       if(myrank==0) print *, ">A="
+!       call mat_view(A,ierr)
+!	endif
+!  	call mat_destroy(A,ierr)	
+!   call PetscLogEventEnd(ievent(4),ierr)
+
+
+!	if(myrank==0) print *, "==============Test mat_copy==============="
+!   call PetscLogEventBegin(ievent(5),ierr)
+!	call mat_eye(A,m,m,ierr)
+!	call mat_copy(A,B,ierr)
+!   if(debug) then
+!       if(myrank==0) print *, ">A="
+!       call mat_view(A,ierr)
+!       if(myrank==0) print *, ">B="
+!       call mat_view(B,ierr)
+!	endif
+!	call mat_destroy(A,ierr)	
+!	call mat_destroy(B,ierr)
+!   call PetscLogEventEnd(ievent(5),ierr)
+
+!   if(myrank==0) print *, "==============Test mat_add==============="
+!   call PetscLogEventBegin(ievent(6),ierr)
+!   call mat_eye(A1,m,m,ierr)
+!   call mat_ones(A2,m,m,ierr)
+!   call mat_add(A1,A2,B,ierr)
+!   if(debug) then
+!       if(myrank==0) print *, ">A1="
+!       call mat_view(A1,ierr)
+!       if(myrank==0) print *, ">A2="
+!       call mat_view(A2,ierr)
+!       if(myrank==0) print *, ">B="
+!       call mat_view(B,ierr)
+!	endif
+!   call mat_destroy(A1,ierr)	
+!   call mat_destroy(A2,ierr)	
+!   call mat_destroy(B,ierr)	
+!   call PetscLogEventEnd(ievent(6),ierr)
+
+!   if(myrank==0) print *, "==============Test mat_hjoin==============="
+!   call PetscLogEventBegin(ievent(7),ierr)
+!   call mat_zeros(A1,m,n,ierr)
+!   call mat_seq(A2,m,m,ierr)
+!   call mat_hjoin(A1,A2,B,ierr)
+!   if(debug) then
+!       if(myrank==0) print *, ">A1="
+!       call mat_view(A1,ierr)
+!       if(myrank==0) print *, ">A2="
+!       call mat_view(A2,ierr)
+!       if(myrank==0) print *, ">B="
+!       call mat_view(B,ierr)
+!	endif
+!   call mat_destroy(A1,ierr)	
+!   call mat_destroy(A2,ierr)	
+!   call mat_destroy(B,ierr)	
+!   call PetscLogEventEnd(ievent(7),ierr)
+
+
+!   if(myrank==0) print *, "==============Test mat_mult==============="
+!   call PetscLogEventBegin(ievent(8),ierr)
+!   call mat_ones(A1,m,m,ierr)
+!   call mat_eye(A2,m,2*m,ierr)
+!   call mat_mult(A1,A2,B,ierr)
+!   if(debug) then
+!       if(myrank==0) print *, ">A1="
+!       call mat_view(A1,ierr)
+!       if(myrank==0) print *, ">A2="
+!       call mat_view(A2,ierr)
+!       if(myrank==0) print *, ">B="
+!       call mat_view(B,ierr)
+!	endif
+!   call mat_destroy(A1,ierr)	
+!   call mat_destroy(A2,ierr)	
+!   call mat_destroy(B,ierr)	
+!   call PetscLogEventEnd(ievent(8),ierr)
+
+
+!	if(myrank==0) print *, "==============Test mat_eprod==============="
+!   call PetscLogEventBegin(ievent(9),ierr)
+!	call mat_seq(A1,m,m,ierr)
+!	call mat_eye(A2,m,m,ierr)
+!	call mat_eprod(A1,A2,B,ierr)
+!   if(debug) then
+!       if(myrank==0) print *, ">A1="
+!       call mat_view(A1,ierr)
+!       if(myrank==0) print *, ">A2="
+!       call mat_view(A2,ierr)
+!       if(myrank==0) print *, ">B="
+!       call mat_view(B,ierr)
+!	endif
+!	call mat_destroy(A1,ierr)
+!	call mat_destroy(A2,ierr)
+!	call mat_destroy(B,ierr)	
+
+!   call mat_seq(A,m,n,ierr)
+!	call mat_eprod(A,A,B,ierr)
+!   if(debug) then
+!       if(myrank==0) print *, ">A="
+!       call mat_view(A,ierr)
+!       if(myrank==0) print *, ">B="
+!       call mat_view(B,ierr)
+!	endif
+!	call mat_destroy(A,ierr)
+!	call mat_destroy(B,ierr)	
+!
+
+!all PetscLogEventEnd(ievent(9),ierr)
+
+
+!   if(myrank==0) print *, "==============Test mat_rep==============="
+!   call PetscLogEventBegin(ievent(10),ierr)
+!   call mat_seq(A,m,m,ierr)
+!   call mat_rep(A,3,2,B,ierr)
+!   if(debug) then
+!       if(myrank==0) print *, ">A="
+!       call mat_view(A,ierr)
+!       if(myrank==0) print *, ">B="
+!       call mat_view(B,ierr)
+!	endif
+!   call mat_destroy(A,ierr)	
+!   call mat_destroy(B,ierr)	
+!   call PetscLogEventEnd(ievent(10),ierr)
+
+
+!   if(myrank==0) print *, "==============Test mat_sum==============="
+!   call PetscLogEventBegin(ievent(11),ierr)
+!   !call mat_seq(A,m,m,ierr)
+!   call mat_seq(A,m,m,ierr)
+!   call mat_sum(A,1,B,ierr)
+!   if(debug) then
+!       if(myrank==0) print *, ">A="
+!       call mat_view(A,ierr)
+!       if(myrank==0) print *, ">B="
+!       call mat_view(B,ierr)
+!	endif
+!	call mat_destroy(A,ierr)	
+!	call mat_destroy(B,ierr)	
+!
+!   !call mat_seq(A,m,m,ierr)
+!   call mat_seq(A,m,m,ierr)
+!   call mat_sum(A,2,B,ierr)
+!   if(debug) then
+!       if(myrank==0) print *, ">A="
+!       call mat_view(A,ierr)
+!       if(myrank==0) print *, ">B="
+!       call mat_view(B,ierr)
+!	endif
+!	call mat_destroy(A,ierr)	
+!	call mat_destroy(B,ierr)	
+!   call PetscLogEventEnd(ievent(11),ierr)
+
+
+!   if(myrank==0) print *, "==============Test mat_axpy=============="
+!   call PetscLogEventBegin(ievent(12),ierr)
+!	call mat_seq(A,m,n,ierr)
+!   call mat_ones(B,m,n,ierr)
+!   alpha=1.0    
+!   call mat_axpy(B,alpha,A,ierr)
+!   if(debug) then
+!       if(myrank==0) print *, ">A="
+!       call mat_view(A,ierr)
+!       if(myrank==0) print *, ">B="
+!       call mat_view(B,ierr)
+!	endif
+!	call mat_destroy(A,ierr)	
+!	call mat_destroy(B,ierr)	
+!   call PetscLogEventEnd(ievent(12),ierr)
+
+
+!   if(myrank==0) print *, "==============Test mat_aypx=============="
+!   call PetscLogEventBegin(ievent(13),ierr)
+!	call mat_seq(A,m,n,ierr)
+!	call mat_ones(B,m,n,ierr)
+!   alpha=10.0    
+!   call mat_aypx(B,alpha,A,ierr)
+!   if(debug) then
+!       if(myrank==0) print *, ">A="
+!       call mat_view(A,ierr)
+!       if(myrank==0) print *, ">B="
+!       call mat_view(B,ierr)
+!	endif
+!	call mat_destroy(A,ierr)	
+!	call mat_destroy(B,ierr)	
+!   call PetscLogEventEnd(ievent(13),ierr)
+
+!   
+!   if(myrank==0) print *, "==============Test mat_trans=============="
+!   call PetscLogEventBegin(ievent(14),ierr)
+!   call mat_seq(A,m,2*m,ierr)
+!   call mat_trans(A,B,ierr)
+!   if(debug) then
+!       if(myrank==0) print *, ">A="
+!       call mat_view(A,ierr)
+!       if(myrank==0) print *, ">B="
+!       call mat_view(B,ierr)
+!	endif
+!   call mat_destroy(A,ierr)	
+!	call mat_destroy(B,ierr)	
+!   call PetscLogEventEnd(ievent(14),ierr)
+
+
+!   if(myrank==0) print *, "==============Test mat_xyt=============="
+!   call PetscLogEventBegin(ievent(15),ierr)
+!   call mat_seq(A1,m,m,ierr)
+!   call mat_ones(A2,m,m,ierr)
+!   call mat_xyt(A1,A2,B,ierr)
+!   if(debug) then
+!       if(myrank==0) print *, ">A1="
+!       call mat_view(A1,ierr)
+!       if(myrank==0) print *, ">A2="
+!       call mat_view(A2,ierr)
+!       if(myrank==0) print *, ">B=A1*A2^T="
+!       call mat_view(B,ierr)
+!	endif
+!	call mat_destroy(A1,ierr)	
+!	call mat_destroy(A2,ierr)	
+!	call mat_destroy(B,ierr)	
+!   call PetscLogEventEnd(ievent(15),ierr)
+
+
+!   if(myrank==0) print *, "==============Test mat_xty=============="
+!   call PetscLogEventBegin(ievent(16),ierr)
+!	call mat_seq(A1,m,m,ierr)
+!	call mat_ones(A2,m,m,ierr)
+!   call mat_xty(A1,A2,B,ierr)
+!   if(debug) then
+!       if(myrank==0) print *, ">A1="
+!       call mat_view(A1,ierr)
+!       if(myrank==0) print *, ">A2="
+!       call mat_view(A2,ierr)
+!       if(myrank==0) print *, ">B=A1^T*A2="
+!       call mat_view(B,ierr)
+!	endif
+!	call mat_destroy(A1,ierr)	
+!	call mat_destroy(A2,ierr)	
+!	call mat_destroy(B,ierr)	
+!   call PetscLogEventEnd(ievent(16),ierr)
+
+!   if(myrank==0) print *, "==============Test mat_scale=============="
+!   call PetscLogEventBegin(ievent(17),ierr)
+!	call mat_eye(A,m,m,ierr)
+!   if(debug) then
+!       if(myrank==0) print *, ">A="
+!       call mat_view(A,ierr)
+!	endif
+!   alpha=2.0
+!   call mat_scale(A,alpha,ierr)
+!   if(debug) then
+!       if(myrank==0) print *, ">ScaleA="
+!       call mat_view(A,ierr)
+!	endif
+!	call mat_destroy(A,ierr)	
+!   call PetscLogEventEnd(ievent(17),ierr)
+
+!   if(myrank==0) print *, "==============Test mat_solve=============="
+!   call PetscLogEventBegin(ievent(18),ierr)
+!	call mat_seq(A,m,m,ierr)
+!   call vec_create(rhs,m,ierr)
+!   call vec_create(x,m,ierr)
+!   alpha=1.0
+!   call VecSet(rhs,alpha,ierr)
+!   if(debug) then
+!       if(myrank==0) print *, ">A="
+!       call mat_view(A,ierr)
+!       if(myrank==0) print *, ">rhs="
+!       call vec_view(rhs,ierr)
+!	endif
+
+!   call mat_solve(A,rhs,x,ierr)
+!   if(debug) then
+!       if(myrank==0) print *, ">x="
+!       call vec_view(x,ierr)
+!	endif
+!	call mat_destroy(A,ierr)	
+!	call vec_destroy(rhs,ierr)	
+!	call vec_destroy(x,ierr)	
+!   call PetscLogEventEnd(ievent(18),ierr)
+
+!   if(myrank==0) print *, "==============Test mat_math=============="
+!   call PetscLogEventBegin(ievent(19),ierr)
+!   !m=10
+!	call mat_seq(A,m*m,m*m,ierr)
+!   call mat_math(A,MAT_MATH_SQRT,B,ierr)
+!   if(debug) then
+!       if(myrank==0) print *, ">A="
+!       call mat_view(A,ierr)
+!       if(myrank==0) print *, ">B="
+!       call mat_view(B,ierr)
+!	endif
+!	call mat_destroy(A,ierr)	
+!	call mat_destroy(B,ierr)	
+!   call PetscLogEventEnd(ievent(19),ierr)
+
+!   if(myrank==0) print *, "==============Test mat_load=============="
+!   call PetscLogEventBegin(ievent(20),ierr)
+!   filename="md001.00004"
+!   call mat_create(A,4,4,ierr)
+!   !filename="md059.03600"
+!   !call mat_create(A,3600,4,ierr)
+!   call mat_load(filename,A,ierr)
+!   if(debug) then
+!       if(myrank==0) print *, ">A="
+!       call mat_view(A,ierr)
+!	endif
+!	call mat_destroy(A,ierr)	
+!   call PetscLogEventEnd(ievent(20),ierr)
+
+
+!   if(myrank==0) print *, "==============Test rbf_cart2sph=========="
+!   call PetscLogEventBegin(ievent(21),ierr)
+!   filename="md001.00004"
+!   call mat_create(A,4,4,ierr)
+!   call mat_load(filename,A,ierr)
+!   call rbf_cart2sph(A,B,ierr)
+!   if(debug) then
+!       if(myrank==0) print *, ">A="
+!       call mat_view(A,ierr)
+!       if(myrank==0) print *, ">B="
+!       call mat_view(B,ierr)
+!	endif
+!	call mat_destroy(A,ierr)	
+!	call mat_destroy(B,ierr)	
+!   call PetscLogEventEnd(ievent(21),ierr)
+
+
+!   if(myrank==0) print *, "==============Test rbf_project_cart2sph=========="
+!   call PetscLogEventBegin(ievent(22),ierr)
+!   filename="md001.00004"
+!   call mat_create(A,4,4,ierr)
+!   call mat_load(filename,A,ierr)
+!   call rbf_project_cart2sph(A,PX,PY,PZ,ierr)
+!   if(debug) then
+!       if(myrank==0) print *, ">A="
+!       call mat_view(A,ierr)
+!       if(myrank==0) print *, ">PX="
+!       call mat_view(PX,ierr)
+!       if(myrank==0) print *, ">PY="
+!       call mat_view(PY,ierr)
+!       if(myrank==0) print *, ">PZ="
+!       call mat_view(PZ,ierr)
+!	endif
+!	call mat_destroy(A,ierr)	
+!	call mat_destroy(PX,ierr)	
+!	call mat_destroy(PY,ierr)	
+!	call mat_destroy(PZ,ierr)	
+!   call PetscLogEventEnd(ievent(22),ierr)
+
+
+!   if(myrank==0) print *, "==============Test rbf_coriolis_force====="
+!   call PetscLogEventBegin(ievent(23),ierr)
+!   filename="md001.00004"
+!   call mat_create(A,4,4,ierr)
+!   call mat_load(filename,A,ierr)
+!   alpha=0 
+!   call rbf_coriolis_force(A,alpha,B,ierr)
+!   if(debug) then
+!       if(myrank==0) print *, ">A="
+!       call mat_view(A,ierr)
+!       if(myrank==0) print *, ">B="
+!       call mat_view(B,ierr)
+!	endif
+!	call mat_destroy(A,ierr)	
+!	call mat_destroy(B,ierr)	
+!   call PetscLogEventEnd(ievent(23),ierr)
+
+
+    if(myrank==0) print *, "==============Test rbf_mountain_profile====="
+    call PetscLogEventBegin(ievent(23),ierr)
+   filename="md001.00004"
+   call mat_create(A,4,4,ierr)
+!    filename="md059.03600"
+!    call mat_create(A,3600,4,ierr)
+    call mat_load(filename,A,ierr)
+    call rbf_cart2sph(A,B,ierr)
+    call rbf_mountain_profile(B,C,ierr)
     if(debug) then
-        if(myrank==0) print *, ">A="
-        call mat_view(A,ierr)
+        !if(myrank==0) print *, ">A="
+        !call mat_view(A,ierr)
+        !if(myrank==0) print *, ">B="
+        !call mat_view(B,ierr)
+        if(myrank==0) print *, ">C="
+        call mat_view(C,ierr)
  	endif
  	call mat_destroy(A,ierr)	
-	call PetscLogEventEnd(ievent(1),ierr)
-
- 	if(myrank==0) print *, "==============Test mat_ones==============="
-	call PetscLogEventBegin(ievent(2),ierr)
- 	call mat_ones(A,m,n,ierr)
-    if(debug) then
-        if(myrank==0) print *, ">A="
-        call mat_view(A,ierr)
- 	endif
- 	call mat_destroy(A,ierr)	
-	call PetscLogEventEnd(ievent(2),ierr)
-
- 	if(myrank==0) print *, "==============Test mat_seq==============="
-	call PetscLogEventBegin(ievent(3),ierr)
- 	call mat_seq(A,m,n,ierr)
-    if(debug) then
-        if(myrank==0) print *, ">A="
-        call mat_view(A,ierr)
- 	endif
- 	call mat_destroy(A,ierr)	
-	call PetscLogEventEnd(ievent(3),ierr)
-  
-    if(myrank==0) print *, "==============Test mat_eye==============="
-	call PetscLogEventBegin(ievent(4),ierr)
-    call mat_eye(A,m,m,ierr)	
-    if(debug) then
-        if(myrank==0) print *, ">A="
-        call mat_view(A,ierr)
- 	endif
-    call mat_destroy(A,ierr)	
-
- 	call mat_eye(A,m,2*m,ierr)	
-    if(debug) then
-        if(myrank==0) print *, ">A="
-        call mat_view(A,ierr)
- 	endif
- 	call mat_destroy(A,ierr)	
-
-   	call mat_eye(A,2*m,m,ierr)	
-    if(debug) then
-        if(myrank==0) print *, ">A="
-        call mat_view(A,ierr)
- 	endif
-   	call mat_destroy(A,ierr)	
-	call PetscLogEventEnd(ievent(4),ierr)
-
-
- 	if(myrank==0) print *, "==============Test mat_copy==============="
-	call PetscLogEventBegin(ievent(5),ierr)
- 	call mat_eye(A,m,m,ierr)
- 	call mat_copy(A,B,ierr)
-    if(debug) then
-        if(myrank==0) print *, ">A="
-        call mat_view(A,ierr)
-        if(myrank==0) print *, ">B="
-        call mat_view(B,ierr)
- 	endif
- 	call mat_destroy(A,ierr)	
- 	call mat_destroy(B,ierr)
-	call PetscLogEventEnd(ievent(5),ierr)
-
-    if(myrank==0) print *, "==============Test mat_add==============="
-	call PetscLogEventBegin(ievent(6),ierr)
-    call mat_eye(A1,m,m,ierr)
-    call mat_ones(A2,m,m,ierr)
-    call mat_add(A1,A2,B,ierr)
-    if(debug) then
-        if(myrank==0) print *, ">A1="
-        call mat_view(A1,ierr)
-        if(myrank==0) print *, ">A2="
-        call mat_view(A2,ierr)
-        if(myrank==0) print *, ">B="
-        call mat_view(B,ierr)
- 	endif
-    call mat_destroy(A1,ierr)	
-    call mat_destroy(A2,ierr)	
-    call mat_destroy(B,ierr)	
-	call PetscLogEventEnd(ievent(6),ierr)
-
-    if(myrank==0) print *, "==============Test mat_hjoin==============="
-    call PetscLogEventBegin(ievent(7),ierr)
-    call mat_zeros(A1,m,n,ierr)
-    call mat_seq(A2,m,m,ierr)
-    call mat_hjoin(A1,A2,B,ierr)
-    if(debug) then
-        if(myrank==0) print *, ">A1="
-        call mat_view(A1,ierr)
-        if(myrank==0) print *, ">A2="
-        call mat_view(A2,ierr)
-        if(myrank==0) print *, ">B="
-        call mat_view(B,ierr)
- 	endif
-    call mat_destroy(A1,ierr)	
-    call mat_destroy(A2,ierr)	
-    call mat_destroy(B,ierr)	
-    call PetscLogEventEnd(ievent(7),ierr)
-
-
-    if(myrank==0) print *, "==============Test mat_mult==============="
-    call PetscLogEventBegin(ievent(8),ierr)
-    call mat_ones(A1,m,m,ierr)
-    call mat_eye(A2,m,2*m,ierr)
-    call mat_mult(A1,A2,B,ierr)
-    if(debug) then
-        if(myrank==0) print *, ">A1="
-        call mat_view(A1,ierr)
-        if(myrank==0) print *, ">A2="
-        call mat_view(A2,ierr)
-        if(myrank==0) print *, ">B="
-        call mat_view(B,ierr)
- 	endif
-    call mat_destroy(A1,ierr)	
-    call mat_destroy(A2,ierr)	
-    call mat_destroy(B,ierr)	
-	call PetscLogEventEnd(ievent(8),ierr)
-
-
- 	if(myrank==0) print *, "==============Test mat_eprod==============="
-    call PetscLogEventBegin(ievent(9),ierr)
- 	call mat_seq(A1,m,m,ierr)
- 	call mat_eye(A2,m,m,ierr)
- 	call mat_eprod(A1,A2,B,ierr)
-    if(debug) then
-        if(myrank==0) print *, ">A1="
-        call mat_view(A1,ierr)
-        if(myrank==0) print *, ">A2="
-        call mat_view(A2,ierr)
-        if(myrank==0) print *, ">B="
-        call mat_view(B,ierr)
- 	endif
- 	call mat_destroy(A1,ierr)
- 	call mat_destroy(A2,ierr)
  	call mat_destroy(B,ierr)	
+ 	call mat_destroy(C,ierr)	
+    call PetscLogEventEnd(ievent(23),ierr)
 
-    call mat_seq(A,m,n,ierr)
- 	call mat_eprod(A,A,B,ierr)
-    if(debug) then
-        if(myrank==0) print *, ">A="
-        call mat_view(A,ierr)
-        if(myrank==0) print *, ">B="
-        call mat_view(B,ierr)
- 	endif
- 	call mat_destroy(A,ierr)
- 	call mat_destroy(B,ierr)	
- 
-
-call PetscLogEventEnd(ievent(9),ierr)
-
-
-    if(myrank==0) print *, "==============Test mat_rep==============="
-    call PetscLogEventBegin(ievent(10),ierr)
-    call mat_seq(A,m,m,ierr)
-    call mat_rep(A,3,2,B,ierr)
-    if(debug) then
-        if(myrank==0) print *, ">A="
-        call mat_view(A,ierr)
-        if(myrank==0) print *, ">B="
-        call mat_view(B,ierr)
- 	endif
-    call mat_destroy(A,ierr)	
-    call mat_destroy(B,ierr)	
-	call PetscLogEventEnd(ievent(10),ierr)
-
-
-    if(myrank==0) print *, "==============Test mat_sum==============="
-    call PetscLogEventBegin(ievent(11),ierr)
-    !call mat_seq(A,m,m,ierr)
-    call mat_seq(A,m,m,ierr)
-    call mat_sum(A,1,B,ierr)
-    if(debug) then
-        if(myrank==0) print *, ">A="
-        call mat_view(A,ierr)
-        if(myrank==0) print *, ">B="
-        call mat_view(B,ierr)
- 	endif
- 	call mat_destroy(A,ierr)	
- 	call mat_destroy(B,ierr)	
- 
-    !call mat_seq(A,m,m,ierr)
-    call mat_seq(A,m,m,ierr)
-    call mat_sum(A,2,B,ierr)
-    if(debug) then
-        if(myrank==0) print *, ">A="
-        call mat_view(A,ierr)
-        if(myrank==0) print *, ">B="
-        call mat_view(B,ierr)
- 	endif
- 	call mat_destroy(A,ierr)	
- 	call mat_destroy(B,ierr)	
-    call PetscLogEventEnd(ievent(11),ierr)
-
-
-    if(myrank==0) print *, "==============Test mat_axpy=============="
-    call PetscLogEventBegin(ievent(12),ierr)
- 	call mat_seq(A,m,n,ierr)
-    call mat_ones(B,m,n,ierr)
-    alpha=1.0    
-    call mat_axpy(B,alpha,A,ierr)
-    if(debug) then
-        if(myrank==0) print *, ">A="
-        call mat_view(A,ierr)
-        if(myrank==0) print *, ">B="
-        call mat_view(B,ierr)
- 	endif
- 	call mat_destroy(A,ierr)	
- 	call mat_destroy(B,ierr)	
-	call PetscLogEventEnd(ievent(12),ierr)
-
-
-    if(myrank==0) print *, "==============Test mat_aypx=============="
-    call PetscLogEventBegin(ievent(13),ierr)
- 	call mat_seq(A,m,n,ierr)
- 	call mat_ones(B,m,n,ierr)
-    alpha=10.0    
-    call mat_aypx(B,alpha,A,ierr)
-    if(debug) then
-        if(myrank==0) print *, ">A="
-        call mat_view(A,ierr)
-        if(myrank==0) print *, ">B="
-        call mat_view(B,ierr)
- 	endif
- 	call mat_destroy(A,ierr)	
- 	call mat_destroy(B,ierr)	
-	call PetscLogEventEnd(ievent(13),ierr)
-
-    
-    if(myrank==0) print *, "==============Test mat_trans=============="
-	call PetscLogEventBegin(ievent(14),ierr)
-    call mat_seq(A,m,2*m,ierr)
-    call mat_trans(A,B,ierr)
-    if(debug) then
-        if(myrank==0) print *, ">A="
-        call mat_view(A,ierr)
-        if(myrank==0) print *, ">B="
-        call mat_view(B,ierr)
- 	endif
-    call mat_destroy(A,ierr)	
- 	call mat_destroy(B,ierr)	
-	call PetscLogEventEnd(ievent(14),ierr)
-
-
-    if(myrank==0) print *, "==============Test mat_xyt=============="
-    call PetscLogEventBegin(ievent(15),ierr)
-    call mat_seq(A1,m,m,ierr)
-    call mat_ones(A2,m,m,ierr)
-    call mat_xyt(A1,A2,B,ierr)
-    if(debug) then
-        if(myrank==0) print *, ">A1="
-        call mat_view(A1,ierr)
-        if(myrank==0) print *, ">A2="
-        call mat_view(A2,ierr)
-        if(myrank==0) print *, ">B=A1*A2^T="
-        call mat_view(B,ierr)
- 	endif
- 	call mat_destroy(A1,ierr)	
- 	call mat_destroy(A2,ierr)	
- 	call mat_destroy(B,ierr)	
-	call PetscLogEventEnd(ievent(15),ierr)
-
-
-    if(myrank==0) print *, "==============Test mat_xty=============="
-    call PetscLogEventBegin(ievent(16),ierr)
- 	call mat_seq(A1,m,m,ierr)
- 	call mat_ones(A2,m,m,ierr)
-    call mat_xty(A1,A2,B,ierr)
-    if(debug) then
-        if(myrank==0) print *, ">A1="
-        call mat_view(A1,ierr)
-        if(myrank==0) print *, ">A2="
-        call mat_view(A2,ierr)
-        if(myrank==0) print *, ">B=A1^T*A2="
-        call mat_view(B,ierr)
- 	endif
- 	call mat_destroy(A1,ierr)	
- 	call mat_destroy(A2,ierr)	
- 	call mat_destroy(B,ierr)	
-	call PetscLogEventEnd(ievent(16),ierr)
-
-    if(myrank==0) print *, "==============Test mat_scale=============="
-    call PetscLogEventBegin(ievent(17),ierr)
- 	call mat_eye(A,m,m,ierr)
-    if(debug) then
-        if(myrank==0) print *, ">A="
-        call mat_view(A,ierr)
- 	endif
-    alpha=2.0
-    call mat_scale(A,alpha,ierr)
-    if(debug) then
-        if(myrank==0) print *, ">ScaleA="
-        call mat_view(A,ierr)
- 	endif
- 	call mat_destroy(A,ierr)	
-	call PetscLogEventEnd(ievent(17),ierr)
-
-    if(myrank==0) print *, "==============Test mat_solve=============="
-    call PetscLogEventBegin(ievent(18),ierr)
- 	call mat_seq(A,m,m,ierr)
-    call vec_create(rhs,m,ierr)
-    call vec_create(x,m,ierr)
-    alpha=1.0
-    call VecSet(rhs,alpha,ierr)
-    if(debug) then
-        if(myrank==0) print *, ">A="
-        call mat_view(A,ierr)
-        if(myrank==0) print *, ">rhs="
-        call vec_view(rhs,ierr)
- 	endif
-
-    call mat_solve(A,rhs,x,ierr)
-    if(debug) then
-        if(myrank==0) print *, ">x="
-        call vec_view(x,ierr)
- 	endif
- 	call mat_destroy(A,ierr)	
- 	call vec_destroy(rhs,ierr)	
- 	call vec_destroy(x,ierr)	
-	call PetscLogEventEnd(ievent(18),ierr)
-
-	if(myrank==0) print *, "==============Test mat_math=============="
-    call PetscLogEventBegin(ievent(19),ierr)
-	!m=10
- 	call mat_seq(A,m*m,m*m,ierr)
-    call mat_math(A,MAT_MATH_SQRT,B,ierr)
-	if(debug) then
-        if(myrank==0) print *, ">A="
-        call mat_view(A,ierr)
-        if(myrank==0) print *, ">B="
-        call mat_view(B,ierr)
- 	endif
- 	call mat_destroy(A,ierr)	
- 	call mat_destroy(B,ierr)	
-	call PetscLogEventEnd(ievent(19),ierr)
 
 
     if(myrank==0) print *, "===================End==================="

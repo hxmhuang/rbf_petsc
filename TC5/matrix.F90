@@ -738,4 +738,49 @@ subroutine mat_solve(A,b,x,ierr)
 end subroutine
 
 
+subroutine mat_load(filename,A,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+    character*100,  intent(in)  ::  filename 
+	Mat,			intent(in)	::	A
+	PetscErrorCode,	intent(out)	::	ierr
+    
+    !PetscReal,allocatable       :: x(:,:)
+    PetscScalar,allocatable       :: x(:,:)
+ 	PetscScalar,allocatable     :: row(:) 
+	PetscInt,allocatable		:: idxn(:)
+ 	PetscInt					:: nrow,ncol
+ 	PetscInt					:: ista,iend
+    integer                     :: i,j,fid
+
+	call MatGetSize(A,nrow,ncol,ierr)
+    call MatGetOwnershipRange(A,ista,iend,ierr)
+    
+    allocate(x(ncol,nrow),row(ncol),idxn(ncol))
+    
+    fid=1000
+    open(fid,FILE=filename)
+    do i=1,nrow
+       read(fid,*), x(:,i)
+    enddo
+    close(fid)
+    !print *, "x=",x
+
+    do i=ista,iend-1
+		do j=1,ncol
+			idxn(j)=j-1
+			!row(j)=x(i,j)
+		enddo
+		!call MatSetValues(A,1,i,ncol,idxn,row,INSERT_VALUES,ierr)
+		call MatSetValues(A,1,i,ncol,idxn,x(:,i+1),INSERT_VALUES,ierr)
+	enddo
+	call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
+	call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
+    deallocate(x,row)
+end subroutine
+
+
 end module
