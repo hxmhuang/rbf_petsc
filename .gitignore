@@ -26,3 +26,10 @@
 *.exe
 *.out
 *.app
+
+*.log
+*.o*
+
+*.dSYM/
+
+.DS_Store
