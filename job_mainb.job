@@ -8,4 +8,4 @@
 
 cd $PBS_O_WORKDIR
 
-mpirun -np 280 ./main -ep 6.1 -m 200 -n 200 -meval 300 -neval 300 -log_view -mat_composite_merge -ksp_type bcgs -pc_type bjacobi -sub_ksp_type preonly -sub_pc_type sor 2>&1 | tee job_mainb.log  
+mpirun -np 280 ./main -ep 18.1 -m 100 -n 100 -meval 120 -neval 120 -log_view -mat_composite_merge -ksp_type bcgs -pc_type bjacobi -sub_ksp_type preonly -sub_pc_type sor 2>&1 | tee job_mainb.log  

@@ -13,6 +13,7 @@ program test
 #include <petsc/finclude/petscvec.h90>
 #include <petsc/finclude/petscmat.h>
 #include <petsc/finclude/petscksp.h>
+#include "mat_math_type.h"
 	! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	!                   Variable declarations
 	! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -65,7 +66,7 @@ program test
 	call PetscLogEventRegister("mat_xty",0, ievent(16), ierr)
 	call PetscLogEventRegister("mat_scale",0, ievent(17), ierr)
 	call PetscLogEventRegister("mat_solve",0, ievent(18), ierr)
-	call PetscLogEventRegister("mat_19",0, ievent(19), ierr)
+	call PetscLogEventRegister("mat_math",0, ievent(19), ierr)
 	call PetscLogEventRegister("mat_20",0, ievent(20), ierr)
 
 
@@ -395,6 +396,20 @@ call PetscLogEventEnd(ievent(9),ierr)
  	call vec_destroy(x,ierr)	
 	call PetscLogEventEnd(ievent(18),ierr)
 
+	if(myrank==0) print *, "==============Test mat_math=============="
+    call PetscLogEventBegin(ievent(19),ierr)
+	m=30
+ 	call mat_seq(A,m*m,m*m,ierr)
+    call mat_math(A,MAT_MATH_SQRT,B,ierr)
+	if(debug) then
+        if(myrank==0) print *, ">A="
+        call mat_view(A,ierr)
+        if(myrank==0) print *, ">B="
+        call mat_view(B,ierr)
+ 	endif
+ 	call mat_destroy(A,ierr)	
+ 	call mat_destroy(B,ierr)	
+	call PetscLogEventEnd(ievent(19),ierr)
 
 
     if(myrank==0) print *, "===================End==================="
