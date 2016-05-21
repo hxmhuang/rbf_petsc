@@ -137,9 +137,24 @@ subroutine rbf_distancematrix(A1,A2,B,ierr)
 	Mat                     		:: P1,P2,P3 
 	PetscInt	            		:: nrow1,ncol1,nrow2,ncol2
 	PetscScalar						:: alpha
+	
+    PetscMPIInt		myrank,mysize
+	PetscLogEvent	ievent(13)
+	call PetscLogEventRegister("1_dm_eprod",0, ievent(1), ierr)
+	call PetscLogEventRegister("2_dm_sum",0, ievent(2), ierr)
+	call PetscLogEventRegister("3_dm_rep",0, ievent(3), ierr)
+	call PetscLogEventRegister("4_dm_xyt",0, ievent(4), ierr)
+	call PetscLogEventRegister("5_dm_axpy",0, ievent(5), ierr)
+	call PetscLogEventRegister("6_dm_destroy",0, ievent(6), ierr)
+	call PetscLogEventRegister("7_dm_eprod",0, ievent(7), ierr)
+	call PetscLogEventRegister("8_dm_sum",0, ievent(8), ierr)
+	call PetscLogEventRegister("9_dm_trans",0, ievent(9), ierr)
+	call PetscLogEventRegister("10_dm_rep",0, ievent(10), ierr)
+	call PetscLogEventRegister("11_dm_axpy",0, ievent(11), ierr)
+	call PetscLogEventRegister("12_dm_math_sqrt",0, ievent(12), ierr)
+	call PetscLogEventRegister("13_dm_destroy",0, ievent(13), ierr)
 
-	PetscMPIInt		myrank,mysize
-	call MPI_Comm_rank(PETSC_COMM_WORLD,myrank,ierr)
+    call MPI_Comm_rank(PETSC_COMM_WORLD,myrank,ierr)
 	call MPI_Comm_rank(PETSC_COMM_WORLD,mysize,ierr)
  
 	call MatGetSize(A1,nrow1,ncol1,ierr)
@@ -150,42 +165,70 @@ subroutine rbf_distancematrix(A1,A2,B,ierr)
 		stop	
 	endif
     
+	call PetscLogEventBegin(ievent(1),ierr)
     call mat_eprod(A1,A1,W1,ierr)
+	call PetscLogEventEnd(ievent(1),ierr)
+    
+	call PetscLogEventBegin(ievent(2),ierr)
     call mat_sum(W1,2,W2,ierr)
+	call PetscLogEventEnd(ievent(2),ierr)
+    
+	call PetscLogEventBegin(ievent(3),ierr)
     call mat_rep(W2,1,nrow2,P1,ierr)
+	call PetscLogEventEnd(ievent(3),ierr)
 	!if(myrank==0) print *, ">P1="
 	!call mat_view(P1,ierr)
 	
+	call PetscLogEventBegin(ievent(4),ierr)
 	call mat_xyt(A1,A2,P2,ierr)
+	call PetscLogEventEnd(ievent(4),ierr)
 	!if(myrank==0) print *, ">P2="
 	!call mat_view(P2,ierr)
+	call PetscLogEventBegin(ievent(5),ierr)
 	alpha=-2.0
 	call mat_axpy(P1,alpha,P2,ierr)
+	call PetscLogEventEnd(ievent(5),ierr)
 	
+	call PetscLogEventBegin(ievent(6),ierr)
     call mat_destroy(W1,ierr)
     call mat_destroy(W2,ierr)
+	call PetscLogEventEnd(ievent(6),ierr)
 	
+	call PetscLogEventBegin(ievent(7),ierr)
 	call mat_eprod(A2,A2,W1,ierr)
+	call PetscLogEventEnd(ievent(7),ierr)
+	call PetscLogEventBegin(ievent(8),ierr)
 	call mat_sum(W1,2,W2,ierr)
+	call PetscLogEventEnd(ievent(8),ierr)
+	call PetscLogEventBegin(ievent(9),ierr)
 	call mat_trans(W2,W3,ierr)
+	call PetscLogEventEnd(ievent(9),ierr)
+	call PetscLogEventBegin(ievent(10),ierr)
 	call mat_rep(W3,nrow1,1,P3,ierr)
+	call PetscLogEventEnd(ievent(10),ierr)
 	!if(myrank==0) print *, ">P3="
 	!call mat_view(P3,ierr)
 	
+	call PetscLogEventBegin(ievent(11),ierr)
 	alpha=1.0
 	call mat_axpy(P1,alpha,P3,ierr)	
+	call PetscLogEventEnd(ievent(11),ierr)
     
     
+	call PetscLogEventBegin(ievent(12),ierr)
     call mat_math(P1,MAT_MATH_SQRT,B,ierr)
+	call PetscLogEventEnd(ievent(12),ierr)
 	!if(myrank==0) print *, ">B="
 	!call mat_view(B,ierr)
 
+	call PetscLogEventBegin(ievent(13),ierr)
 	call mat_destroy(W1,ierr)
     call mat_destroy(W2,ierr)
     call mat_destroy(W3,ierr)
 	call mat_destroy(P1,ierr)
     call mat_destroy(P2,ierr)
     call mat_destroy(P3,ierr)
+	call PetscLogEventEnd(ievent(13),ierr)
 end subroutine
 
 subroutine rbf_guassian(ep,A,B,ierr)
