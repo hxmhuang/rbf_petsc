@@ -21,8 +21,8 @@ program test
 	!PC				pc
 	Mat				A,A1,A2,B,C
 	Mat				PX,PY,PZ
+	Mat			    nodes,DPX,DPY,DPZ,L
 	Vec             rhs,x
-    !PetscReal		error
 	PetscMPIInt		myrank,mysize
 	PetscErrorCode	ierr
 	PetscInt		m,n
@@ -30,10 +30,20 @@ program test
     PetscScalar     alpha	
 	PetscLogEvent	ievent(30)
     character*100   filename 
- 	m=2
+    PetscReal		ep
+	PetscInt	    fdsize, order, dims 
+ 	
+    m=2
  	n=3
     debug = .false.
     alpha=1.0
+
+    fdsize=3
+    order=4
+    dims=2
+	ep=2.7
+
+
     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	!                 Beginning of program
 	! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -73,6 +83,8 @@ program test
 	call PetscLogEventRegister("rbf_cart2sph",0, ievent(21), ierr)
 	call PetscLogEventRegister("rbf_projection_cart2sph",0, ievent(22), ierr)
 	call PetscLogEventRegister("rbf_coriolis_force",0, ievent(23), ierr)
+	call PetscLogEventRegister("rbf_mountain_profile",0, ievent(24), ierr)
+	call PetscLogEventRegister("rbf_matrix_fd_hypre",0, ievent(25), ierr)
 
 
 !	if(myrank==0) print *, "==============Test mat_zeros==============="
@@ -489,27 +501,52 @@ program test
 !   call PetscLogEventEnd(ievent(23),ierr)
 
 
-    if(myrank==0) print *, "==============Test rbf_mountain_profile====="
-    call PetscLogEventBegin(ievent(23),ierr)
-   filename="md001.00004"
-   call mat_create(A,4,4,ierr)
-!    filename="md059.03600"
-!    call mat_create(A,3600,4,ierr)
-    call mat_load(filename,A,ierr)
-    call rbf_cart2sph(A,B,ierr)
-    call rbf_mountain_profile(B,C,ierr)
+!   if(myrank==0) print *, "==============Test rbf_mountain_profile====="
+!   call PetscLogEventBegin(ievent(24),ierr)
+!   filename="md002.00009"
+!   call mat_create(A,9,4,ierr)
+!   !filename="md059.03600"
+!   !call mat_create(A,3600,4,ierr)
+!   call mat_load(filename,A,ierr)
+!   call rbf_cart2sph(A,B,ierr)
+!   call rbf_mountain_profile(B,C,ierr)
+!   if(debug) then
+!       !if(myrank==0) print *, ">A="
+!       !call mat_view(A,ierr)
+!       !if(myrank==0) print *, ">B="
+!       !call mat_view(B,ierr)
+!       if(myrank==0) print *, ">C="
+!       call mat_view(C,ierr)
+!	endif
+!	call mat_destroy(A,ierr)	
+!	call mat_destroy(B,ierr)	
+!	call mat_destroy(C,ierr)	
+!   call PetscLogEventEnd(ievent(24),ierr)
+
+    if(myrank==0) print *, "==============Test rbf_matrix_fd_hypre====="
+    call PetscLogEventBegin(ievent(25),ierr)
+    filename="md002.00009"
+    call mat_create(nodes,9,4,ierr)
+    !filename="md059.03600"
+    !call mat_create(A,3600,4,ierr)
+    call mat_load(filename,nodes,ierr)
+    
+    call rbf_matrix_fd_hyper(nodes,ep,fdsize,order,dims,DPx,DPy,DPz,L,ierr)
+
     if(debug) then
         !if(myrank==0) print *, ">A="
         !call mat_view(A,ierr)
         !if(myrank==0) print *, ">B="
         !call mat_view(B,ierr)
-        if(myrank==0) print *, ">C="
-        call mat_view(C,ierr)
+        !if(myrank==0) print *, ">C="
+        !call mat_view(C,ierr)
  	endif
- 	call mat_destroy(A,ierr)	
- 	call mat_destroy(B,ierr)	
- 	call mat_destroy(C,ierr)	
-    call PetscLogEventEnd(ievent(23),ierr)
+ 	call mat_destroy(nodes,ierr)	
+ 	!call mat_destroy(DPx,ierr)	
+ 	!call mat_destroy(DPy,ierr)	
+ 	!call mat_destroy(DPz,ierr)	
+ 	!call mat_destroy(L,ierr)	
+    call PetscLogEventEnd(ievent(25),ierr)
 
 
 

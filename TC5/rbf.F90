@@ -4,6 +4,7 @@
 
 module	rbf 
     use matrix	
+    use vector 
 	type MyStruct
 	sequence
 	PetscScalar :: a,b,c
@@ -233,7 +234,7 @@ subroutine rbf_distancematrix(A1,A2,B,ierr)
 	call PetscLogEventEnd(ievent(13),ierr)
 end subroutine
 
-!A=r^2
+!B= exp(-ep^2*A). Note that A equals to r^2.
 subroutine rbf_guassian(ep,A,B,ierr)
 !    use matrix
 	implicit none
@@ -255,6 +256,33 @@ subroutine rbf_guassian(ep,A,B,ierr)
     call mat_math(W,MAT_MATH_EXP,B,ierr)
 	call mat_destroy(W,ierr)
 end subroutine
+
+
+!B= -2*ep^2*exp(-ep^2*A). Note that A equals to r^2.
+subroutine rbf_diff_guassian(ep,A,B,ierr)
+!    use matrix
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+#include "mat_math_type.h"
+	PetscReal,		intent(in)		::  ep		
+	Mat,			intent(in)		::	A 
+	Mat,			intent(out)		::	B 
+	PetscErrorCode,	intent(out)		::	ierr
+    PetscScalar                     ::  alpha	
+	Mat                 			::	W
+    !rbf = @(e,r) exp(-(e*r).^2)
+    call mat_copy(A,W,ierr)
+    alpha=-ep**2
+    call mat_scale(W,alpha,ierr)
+    call mat_math(W,MAT_MATH_EXP,B,ierr)
+    alpha=2*alpha
+    call mat_scale(B,alpha,ierr)
+	call mat_destroy(W,ierr)
+end subroutine
+
 
 ! -----------------------------------------------------------------------
 ! Transform Cartesian to spherical coordinates.
@@ -334,7 +362,7 @@ subroutine rbf_project_cart2sph(A,PX,PY,PZ,ierr)
     
 	PetscInt					::	nrow1,ncol1,nrow2,ncol2
 	PetscInt,allocatable        ::	idx1(:),idx2(:)
-	PetscScalar,allocatable     ::	row1(:),row2(:),row3(:),row4(:)
+	PetscScalar,allocatable     ::	row1(:),row2(:)
 	PetscInt					::  ista,iend
 	integer						::	i,j
     PetscScalar                 ::  x2,xy,y2,xz,z2,yz
@@ -382,13 +410,13 @@ subroutine rbf_project_cart2sph(A,PX,PY,PZ,ierr)
         row2(2)= 1-y2
         row2(3)= -yz
     	call MatSetValues(PY,1,i,ncol2,idx2,row2,INSERT_VALUES,ierr)
-        !print *,"PYrow3=", row3
+        !print *,"PYrow3=", row2
  
         row2(1)= -xz 
         row2(2)= -yz
         row2(3)= 1-z2
     	call MatSetValues(PZ,1,i,ncol2,idx2,row2,INSERT_VALUES,ierr)
-        !print *,"PZrow4=", row4
+        !print *,"PZrow4=", row2
 
 	enddo
     
@@ -419,7 +447,7 @@ subroutine rbf_coriolis_force(A,angle,B,ierr)
     
 	PetscInt					::	nrow1,ncol1,nrow2,ncol2
 	PetscInt,allocatable        ::	idx1(:),idx2(:)
-	PetscScalar,allocatable     ::	row1(:),row2(:),row3(:),row4(:)
+	PetscScalar,allocatable     ::	row1(:),row2(:)
 	PetscInt					::  ista,iend
 	PetscReal                   ::  omega
     integer						::	i,j
@@ -519,6 +547,98 @@ subroutine rbf_mountain_profile(A,B,ierr)
     call MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY,ierr)
 	call MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY,ierr)
     deallocate(idx1,idx2,row1,row2)
+end subroutine
+
+
+
+! -----------------------------------------------------------------------
+! Compute the coefficient materix DPX, DPY, and DPZ.
+! -----------------------------------------------------------------------
+subroutine rbf_matrix_fd_hyper(nodes,ep,fdsize,order,dims,DPx,DPy,DPz,L,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+#include "mat_math_type.h"
+    
+    Mat,        intent(in)          ::  nodes
+    PetscReal,  intent(in)          ::  ep
+    PetscInt,   intent(in)          ::  fdsize,order,dims
+    Mat,        intent(out)         ::  DPX,DPY,DPZ,L
+    PetscErrorCode, intent(out)     ::  ierr
+    integer                         ::  i,j,k
+
+	PetscInt					    ::	N,ncol
+	PetscInt					    ::	nrow1,ncol1,nrow2,ncol2
+	PetscInt,allocatable            ::	idx1(:),idx2(:)
+	PetscScalar,allocatable         ::	row1(:),row2(:)
+	PetscInt					    ::  ista,iend
+    PetscScalar                     ::  alpha
+   
+    Vec     ::  weightsDx, weightsDy, weightsDz, weightsL
+    Vec     ::  int_i, int_j 
+    Mat     ::  A,idx
+    Vec     ::  B
+    !IS      ::  idx
+
+    call MatGetSize(nodes,N,ncol,ierr)
+
+    call vec_create(weightsDx,N*fdsize,ierr)
+    call vec_duplicate(weightsDx,weightsDy,ierr)
+    call vec_duplicate(weightsDx,weightsDz,ierr)
+    call vec_duplicate(weightsDx,weightsL,ierr)
+    call vec_duplicate(weightsDx,int_i,ierr)
+    call vec_duplicate(weightsDx,int_j,ierr)
+    
+    call mat_ones(A,fdsize+1,fdsize+1,ierr)
+    
+    alpha=0.0
+    call mat_setvalue(A,fdsize,fdsize,alpha,ierr)
+    call vec_create(B,fdsize+1,ierr)
+    
+    call mat_view(A,ierr)
+    
+    call rbf_knnsearch(nodes,fdsize,idx,ierr)
+
+    call mat_view(idx,ierr)
+    
+    call mat_destroy(idx,ierr)
+    call mat_destroy(A,ierr)
+    call vec_destroy(B,ierr)
+    call vec_destroy(weightsDx,ierr)
+    call vec_destroy(weightsDy,ierr)
+    call vec_destroy(weightsDz,ierr)
+    call vec_destroy(weightsL,ierr)
+    call vec_destroy(int_i,ierr)
+    call vec_destroy(int_J,ierr)
+
+end subroutine
+
+
+subroutine rbf_knnsearch(nodes,fdsize,nn,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+#include "mat_math_type.h"
+ 
+    Mat,			intent(in)	::  nodes	
+	PetscInt,	    intent(in)	::  fdsize	
+    ! the nearest neighbours
+    Mat,			intent(out)	::  nn	
+	PetscErrorCode,	intent(out)	::	ierr
+    PetscInt                    ::  nrow,ncol	
+    character*100   filename
+    
+    call MatGetSize(nodes,nrow,ncol,ierr)
+    
+    call mat_create(nn,nrow,fdsize,ierr)
+    
+    filename="nn.md002.00009.txt"
+    call mat_load(filename,nn,ierr)
+
 end subroutine
 
 

@@ -25,7 +25,7 @@ program main
 	PetscErrorCode	ierr
 	
     PetscReal		ep,tend,gamma,pi,lam_c,thm_c,mR,hm0
-	PetscInt	    fd, order, dim, dt, N	
+	PetscInt	    fdsize, order, dims, dt, N	
 	PetscBool		debug
     PetscScalar     alpha,angle,radius,gh0,u0,g
     character*100   filename 
@@ -33,10 +33,10 @@ program main
     debug = .false.
     alpha=1.0
 
-    fd=31
+    fdsize=31
     tend=15
     order=4
-    dim=2
+    dims=2
 	ep=2.7
     dt=900
     gamma=-2.98e-17
@@ -74,7 +74,7 @@ program main
    
     call rbf_coriolis_force(nodes,angle,F,ierr)
 
-
+    call rbf_matrix_fd_hyper(nodes,ep,fdsize,order,dims,DPx,DPy,DPz,L,ierr)
 
     if(debug) then
         if(myrank==0) print *, ">nodes="

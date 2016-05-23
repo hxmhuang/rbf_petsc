@@ -783,4 +783,25 @@ subroutine mat_load(filename,A,ierr)
 end subroutine
 
 
+! -----------------------------------------------------------------------
+! A(m,n)=value 
+! -----------------------------------------------------------------------
+subroutine mat_setvalue(A,m,n,value,ierr)
+	implicit none
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+#include <petsc/finclude/petscvec.h90>
+#include <petsc/finclude/petscmat.h>
+	Mat,			intent(out)	::	A
+	PetscInt,	    intent(in)	::	m,n
+	PetscScalar,    intent(in)	::	value
+	PetscErrorCode,	intent(out)	::	ierr
+	
+    call MatSetValue(A,m,n,value,INSERT_VALUES,ierr)
+    
+    call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
+	call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
+end subroutine
+
+
 end module
