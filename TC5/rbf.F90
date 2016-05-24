@@ -573,12 +573,14 @@ subroutine rbf_matrix_fd_hyper(nodes,ep,fdsize,order,dims,DPx,DPy,DPz,L,ierr)
 	PetscInt					    ::	nrow1,ncol1,nrow2,ncol2
 	PetscInt,allocatable            ::	idx1(:),idx2(:)
 	PetscScalar,allocatable         ::	row1(:),row2(:)
+	PetscInt,allocatable         	::  imat(:)	
+	PetscInt,allocatable         	::	rowint1(:),rowint2(:)
 	PetscInt					    ::  ista,iend
     PetscScalar                     ::  alpha
    
     Vec     ::  weightsDx, weightsDy, weightsDz, weightsL
     Vec     ::  int_i, int_j 
-    Mat     ::  A,idx
+    Mat     ::  A,NN
     Vec     ::  B
     !IS      ::  idx
 
@@ -596,14 +598,27 @@ subroutine rbf_matrix_fd_hyper(nodes,ep,fdsize,order,dims,DPx,DPy,DPz,L,ierr)
     alpha=0.0
     call mat_setvalue(A,fdsize,fdsize,alpha,ierr)
     call vec_create(B,fdsize+1,ierr)
+    !call mat_view(A,ierr)
     
-    call mat_view(A,ierr)
-    
-    call rbf_knnsearch(nodes,fdsize,idx,ierr)
+    call rbf_knnsearch(nodes,fdsize,NN,ierr)
 
-    call mat_view(idx,ierr)
-    
-    call mat_destroy(idx,ierr)
+    call MatGetOwnershipRange(NN,ista,iend,ierr)                                       
+    allocate(row1(fdsize),rowint1(fdsize),row2(fdsize))
+    allocate(imat(fdsize),idx1(fdsize))
+            
+    do i=ista,iend-1
+        call MatGetRow(NN,i,ncol1,idx1,row1,ierr)           
+		imat=int(row1)
+        !print *,"row1=",rowint1    
+        call MatRestoreRow(NN,i,ncol1,idx1,row1,ierr)           
+		
+		!call VecSetValue(
+        
+    enddo   
+    deallocate(row1,rowint1,row2,imat,idx1) 
+ 
+    !call mat_view(NN,ierr)
+    call mat_destroy(NN,ierr)
     call mat_destroy(A,ierr)
     call vec_destroy(B,ierr)
     call vec_destroy(weightsDx,ierr)
@@ -611,7 +626,7 @@ subroutine rbf_matrix_fd_hyper(nodes,ep,fdsize,order,dims,DPx,DPy,DPz,L,ierr)
     call vec_destroy(weightsDz,ierr)
     call vec_destroy(weightsL,ierr)
     call vec_destroy(int_i,ierr)
-    call vec_destroy(int_J,ierr)
+    call vec_destroy(int_j,ierr)
 
 end subroutine
 
