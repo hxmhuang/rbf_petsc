@@ -8,7 +8,9 @@
 % Shallow water simulations on a sphere, J. Comput. Phys. 231 (2012) 4078?095
 
 clear all
-fd = 31;    % size of RBF-FD stencil
+%fd = 31;    % size of RBF-FD stencil
+fd = 3;    % size of RBF-FD stencil
+
 tend  = 15; % ending time, needs to be in days
 order = 4;  % power of Laplacian, L^order
 dim = 2 ;   % dimension of stencil, on sphere dim=2
@@ -46,9 +48,10 @@ dim = 2 ;   % dimension of stencil, on sphere dim=2
 dsply=1; 
 plt=1; 
 
+fname = load('md/md002.00009');
 %fname = load('md059.03600');
 
-fname = load('md079.06400');
+%fname = load('md079.06400');
 
 %%% Icosehedral
 %fname = load('icos40962');
