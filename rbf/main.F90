@@ -37,20 +37,13 @@ program main
         if(myrank==0) print *, ">A="
         ierr=dm_view(A)
  	endif
-    ierr=dm_destroy(A)
-
 
 	if(myrank==0) print *, "==============Test rbf_testfucntionD============"
- 	call rbf_createpoints(A,m,n,ierr)
  	call rbf_testfunction(A,B,ierr)
     if(debug) then
-        if(myrank==0) print *, ">A="
-        ierr=dm_view(A)
          if(myrank==0) print *, ">B="
          ierr=dm_view(B)
  	endif
-    ierr=dm_destroy(A)
-     ierr=dm_destroy(B)
 
 
 
