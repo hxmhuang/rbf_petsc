@@ -3,7 +3,7 @@
 % Calls on: CreatePoints, DistanceMatrix, testfunctionsD, PlotSurf,
 %           PlotError2D
   % Define the Gaussian RBF and shape parameter
-  rbf = @(e,r) exp(-(e*r).^2); ep = 18.1;
+  rbf = @(e,r) exp(-(e^2*r)); ep = 11.1;
   % Create data sites and centers
   m=3;
   n=3;
@@ -11,11 +11,7 @@
   ctrs = dsites;
   % Create evaluation points
   meval=4;
-<<<<<<< HEAD
   neval=4;
-=======
-  neval =4;
->>>>>>> c8c658603a147d47a367df950caa64640d72c2e3
   epoints = CreatePoints(meval*neval,2,'u');
 %  neval = 40; grid = linspace(0,1,neval);
 %  [xe,ye] = meshgrid(grid); epoints = [xe(:) ye(:)];

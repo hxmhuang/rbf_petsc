@@ -110,6 +110,37 @@ subroutine rbf_testfunction(A,B,ierr)
 end subroutine
 
 
+subroutine rbf_distancematrix(A,B,C,ierr)
+	implicit none
+	type(Matrix),intent(in)		::	A,B 
+	type(Matrix),intent(out)	::	C 
+	integer,intent(out)			::	ierr
+	type(Matrix)				::	W1,W2,W3
+	integer						::  m,n
+
+	m=A%nrow
+	n=B%nrow	
+
+	W1=dm_rep(dm_sum((A .em. A),2),1,n)
+	W2=2*dm_xyt(A,B)
+	W3=dm_rep( dm_trans( dm_sum((B .em. B),2) ),m,1)
+   	C=W1-W2+W3
+	
+	ierr=dm_destroy(W1)
+    ierr=dm_destroy(W2)
+    ierr=dm_destroy(W3)
+end subroutine
+
+!B= exp(-ep^2*A). Note that A equals to r^2.
+subroutine rbf_guassian(ep,A,B,ierr)
+	implicit none
+	real*8,			intent(in)	::  ep		
+	type(Matrix),	intent(in)	::	A 
+	type(Matrix),	intent(out)	::	B 
+	integer,		intent(out)	::	ierr
+   
+	B=dm_exp((-ep**2)*A) 
+end subroutine
 
 
 
