@@ -5,13 +5,13 @@
   % Define the Gaussian RBF and shape parameter
   rbf = @(e,r) exp(-(e*r).^2); ep = 18.1;
   % Create data sites and centers
-  m=50;
-  n= 50;
+  m=3;
+  n=3;
   dsites = CreatePoints(m*n,2,'u');
   ctrs = dsites;
   % Create evaluation points
-  meval=40;
-  neval = 40;
+  meval=4;
+  neval =4;
   epoints = CreatePoints(meval*neval,2,'u');
 %  neval = 40; grid = linspace(0,1,neval);
 %  [xe,ye] = meshgrid(grid); epoints = [xe(:) ye(:)];
