@@ -13,6 +13,59 @@ contains
 ! m: there are m points in x direction 
 ! n: there are n points in y direction 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function bk_rbf_createpoints(m,n) result(A)
+	implicit none
+	integer,		intent(in)	::	m,n	
+	type(Matrix)   				::	A 
+	integer						::	ierr
+		
+	real				::  xmin,xmax,ymin,ymax
+	real				::  dx,dy,xcord,ycord
+	integer				::  ista,iend
+	integer				::  ncol,nlocal
+    integer,allocatable ::  idxm(:),idxn(:) 
+    real,allocatable 	::  rows(:)
+	integer		        ::  i,j
+	
+    xmin=0.0
+	xmax=1.0
+	ymin=0.0
+	ymax=1.0
+	dx= (xmax-xmin)/(m-1)
+	dy= (ymax-ymin)/(n-1)
+ 	
+   	A=dm_create(m*n,2)
+	 	
+    if(A%ncol/=2) then
+        print *, "Error in rbf_createpoints: The column size of matrix A should be 2."
+        stop
+    endif
+   	
+    ncol=A%ncol 
+    ista=A%ista
+    iend=A%iend
+    nlocal=iend-ista
+    allocate(idxm(nlocal),idxn(ncol),rows(2*nlocal))
+    
+    do i=ista,iend-1
+    	xcord = xmin+(i/n)*dx
+    	ycord = ymin+mod(i,n)*dy
+        rows((i-ista)*ncol+1)=xcord
+        rows((i-ista)*ncol+2)=ycord
+        idxm(i-ista+1)=i
+    enddo
+    do j=1,ncol
+        idxn(j)=j-1
+    enddo
+    !print *, "nlocal=",nlocal,"idxm=",idxm,"idxn=",idxn,"rows=",rows
+    ierr=dm_setvalues(A,nlocal,idxm,ncol,idxn,rows) 
+   	A%xtype=MAT_XTYPE_IMPLICIT 
+    deallocate(idxm,idxn,rows)
+    !    ierr=dm_view(A)
+end function 
+
+
+
 subroutine rbf_createpoints(A,m,n,ierr)
 	implicit none
 	integer,		intent(in)	::	m,n	
