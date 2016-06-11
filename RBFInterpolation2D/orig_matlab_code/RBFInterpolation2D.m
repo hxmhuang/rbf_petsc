@@ -3,7 +3,7 @@
 % Calls on: CreatePoints, DistanceMatrix, testfunctionsD, PlotSurf,
 %           PlotError2D
   % Define the Gaussian RBF and shape parameter
-  rbf = @(e,r) exp(-(e*r).^2); ep = 18.1;
+  rbf = @(e,r) exp(-(e*r).^2); ep = 11.1;
   % Create data sites and centers
   m=3;
   n=3;
