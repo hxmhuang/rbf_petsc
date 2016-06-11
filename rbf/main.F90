@@ -12,21 +12,18 @@ program main
     integer         :: ierr
     debug=.false.
 
-    ierr=dm_init()
+    call dm_init(ierr)
     
-    myrank=dm_comm_rank()
-    mysize=dm_comm_size()
+    call dm_comm_rank(myrank,ierr)
+    call dm_comm_size(mysize,ierr)
     
-    m=dm_option_int('-m')
-    n=dm_option_int('-n')
-    meval=dm_option_int('-meval')
-    neval=dm_option_int('-neval')
-    ep=dm_option_real('-ep')
-    debug=dm_option_bool('-debug')
+    call dm_option_int('-m',m,ierr)
+    call dm_option_int('-n',n,ierr)
+    call dm_option_int('-meval',meval,ierr)
+    call dm_option_int('-neval',neval,ierr)
+    call dm_option_real('-ep',ep,ierr)
+    call dm_option_bool('-debug',debug,ierr)
  	
-!   dsites=rbf_createpoints(m,n)
-!	epoints=rbf_createpoints(meval,neval)
- 
    	call rbf_createpoints(dsites,m,n,ierr)
    	call rbf_createpoints(epoints,meval,neval,ierr)
 
@@ -49,41 +46,41 @@ program main
 
 	if(debug) then
 		if(myrank==0) print *, ">distes="
-        ierr=dm_view(dsites)
+        call dm_view(dsites,ierr)
         if(myrank==0) print *, ">epoints="
-        ierr=dm_view(epoints)
-         if(myrank==0) print *, ">rhs="
-         ierr=dm_view(rhs)
-         if(myrank==0) print *, ">exact="
-         ierr=dm_view(exact)
-         if(myrank==0) print *, ">DM_data="
-         ierr=dm_view(DM_data)
-         if(myrank==0) print *, ">DM_eval="
-         ierr=dm_view(DM_eval)
-         if(myrank==0) print *, ">IM="
-         ierr=dm_view(IM)
-         if(myrank==0) print *, ">EM="
-         ierr=dm_view(EM)
-         if(myrank==0) print *, ">s="
-         ierr=dm_view(s)
+        call dm_view(epoints,ierr)
+		if(myrank==0) print *, ">rhs="
+		call dm_view(rhs,ierr)
+		if(myrank==0) print *, ">exact="
+		call dm_view(exact,ierr)
+		if(myrank==0) print *, ">DM_data="
+		call dm_view(DM_data,ierr)
+		if(myrank==0) print *, ">DM_eval="
+		call dm_view(DM_eval,ierr)
+		if(myrank==0) print *, ">IM="
+		call dm_view(IM,ierr)
+		if(myrank==0) print *, ">EM="
+		call dm_view(EM,ierr)
+		if(myrank==0) print *, ">s="
+		call dm_view(s,ierr)
  	endif
 
 	if(myrank==0) then
-		print *, "==============Test norm================="
+		print *, "==============Test norm==================="
     	print *, ">RMS 	  error:",rmserr
     	print *, ">Maximum error:",maxerr
 	endif
 
- 	ierr=dm_destroy(dsites)
- 	ierr=dm_destroy(epoints)
-    ierr=dm_destroy(rhs)
-    ierr=dm_destroy(ctrs)
-    ierr=dm_destroy(DM_data)
-    ierr=dm_destroy(DM_eval)
-    ierr=dm_destroy(IM)
-    ierr=dm_destroy(EM)
-    ierr=dm_destroy(s)
-    ierr=dm_destroy(exact)
+ 	call dm_destroy(dsites,ierr)
+ 	call dm_destroy(epoints,ierr)
+    call dm_destroy(rhs,ierr)
+    call dm_destroy(ctrs,ierr)
+    call dm_destroy(DM_data,ierr)
+    call dm_destroy(DM_eval,ierr)
+    call dm_destroy(IM,ierr)
+    call dm_destroy(EM,ierr)
+    call dm_destroy(s,ierr)
+    call dm_destroy(exact,ierr)
 
-    ierr=dm_finalize()
+    call dm_finalize(ierr)
 end program
