@@ -47,7 +47,7 @@ dim = 2 ;   % dimension of stencil, on sphere dim=2
 % Set to plt=1 if you want to plot results at different time-steps.
 dsply=1; 
 plt=1; 
-
+%fname = load('md/md001.00004');
 fname = load('md/md002.00009');
 %fname = load('md059.03600');
 
