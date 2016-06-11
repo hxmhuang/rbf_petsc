@@ -73,7 +73,7 @@ subroutine setupT5(nfile,atm,ierr)
 !   call dm_view(atm%pts%p_w,ierr)
 !   call dm_view(atm%f,ierr)
 !   call dm_view(r2,ierr)
-    call dm_view(id,ierr)
+!   call dm_view(id,ierr)
 !   call dm_view(atm%ghm,ierr)
     
     call dm_destroy(nodes,ierr)
