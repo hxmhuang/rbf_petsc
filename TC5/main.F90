@@ -23,6 +23,7 @@ program main
     dt=900
     gamma=-2.98e-17
     filename="md002.00009"
+    !filename="md059.03600"
     
     call dm_init(ierr)
     
