@@ -10,12 +10,17 @@ subroutine rbfmatrix_fd_hypre(atm,ep,fdsize,order,dim,DPx,DPy,DPz,L,ierr)
     type(Matrix),	intent(out)   :: DPx,DPy,DPz,L 
     integer,intent(out)           :: ierr
     type(Matrix)        		  :: A,B,idx,imat
+    type(Matrix)        		  :: ximat,ximat1,ximat2,ximat3
+    type(Matrix)        		  :: x,x1,x2,x3,xj
     type(Matrix)        		  :: weightsDx,weightsDy,weightsDz,weightsL
     type(Matrix)        		  :: ind_i,ind_j 
 	integer 					  :: N,j
+	integer 					  :: ista,iend
  
     N=atm%pts%x%nrow	
-    
+    ista=atm%pts%x%ista
+    iend=atm%pts%x%iend
+
     weightsDx=dm_zeros(N,N)		
     weightsDy=dm_zeros(N,N)		
     weightsDz=dm_zeros(N,N)		
@@ -30,11 +35,22 @@ subroutine rbfmatrix_fd_hypre(atm,ep,fdsize,order,dim,DPx,DPy,DPz,L,ierr)
 	
 	call knnsearch(idx,ierr) 
 	call dm_view(idx,ierr)	
-   
-	do j=1,N
-		!imat= dm_getrow(idx,j)
-		
-	    !dp=atm%pts%x * dm_getsubmatrix(		
+  
+    x1=atm%pts%x
+    x2=atm%pts%y
+    x3=atm%pts%z
+    
+    x = x1 .hj. x2 .hj. x3
+
+	do j=0,N-1
+		imat= dm_trans(dm_getrow(idx,j))
+        ximat  = dm_submatrix(x,imat,(dm_seqs(3,1))) 
+	    ximat1 = dm_getcol(ximat,0) 
+	    ximat2 = dm_getcol(ximat,1) 
+	    ximat3 = dm_getcol(ximat,2) 
+        xj=dm_getrow(x,j)
+	    
+    !   dp=xj*ximat1 		
 		
 
 
@@ -48,6 +64,16 @@ subroutine rbfmatrix_fd_hypre(atm,ep,fdsize,order,dim,DPx,DPy,DPz,L,ierr)
 	call dm_destroy(A,ierr) 
 	call dm_destroy(B,ierr) 
 	call dm_destroy(idx,ierr) 
+	call dm_destroy(imat,ierr) 
+	call dm_destroy(ximat,ierr) 
+	call dm_destroy(ximat1,ierr) 
+	call dm_destroy(ximat2,ierr) 
+	call dm_destroy(ximat3,ierr) 
+	call dm_destroy(x,ierr) 
+	call dm_destroy(x1,ierr) 
+	call dm_destroy(x2,ierr) 
+	call dm_destroy(x3,ierr) 
+	call dm_destroy(xj,ierr) 
 	!call dm_view(A,ierr)	
 end subroutine
 

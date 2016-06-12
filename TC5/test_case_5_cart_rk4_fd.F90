@@ -10,6 +10,7 @@ subroutine test_case_5_cart_rk4_fd(nfile,ep,fdsize,order,dim,gamma,dt,tend,ierr)
     integer,intent(out) 		:: ierr
     type(AtmType)       		:: atm
     type(Matrix)				:: DPx,DPy,DPz,L 
+
     call setupT5(nfile,atm,ierr)
 	
 	call rbfmatrix_fd_hypre(atm,ep,fdsize,order,dim,DPx,DPy,Dpz,L,ierr)	
