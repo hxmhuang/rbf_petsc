@@ -3,7 +3,11 @@
 % Calls on: CreatePoints, DistanceMatrix, testfunctionsD, PlotSurf,
 %           PlotError2D
   % Define the Gaussian RBF and shape parameter
+<<<<<<< HEAD:RBFInterpolation2D/orig_matlab_code/RBFInterpolation2D.m
   rbf = @(e,r) exp(-(e*r).^2); ep = 11.1;
+=======
+  rbf = @(e,r) exp(-(e^2*r)); ep = 11.1;
+>>>>>>> 0867a47a9711ce30aff5a9502eb72f985b1d2185:rbf/orig_matlab_code/RBFInterpolation2D.m
   % Create data sites and centers
   m=3;
   n=3;
@@ -11,7 +15,7 @@
   ctrs = dsites;
   % Create evaluation points
   meval=4;
-  neval =4;
+  neval=4;
   epoints = CreatePoints(meval*neval,2,'u');
 %  neval = 40; grid = linspace(0,1,neval);
 %  [xe,ye] = meshgrid(grid); epoints = [xe(:) ye(:)];
