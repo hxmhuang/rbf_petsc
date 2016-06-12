@@ -57,10 +57,8 @@ subroutine setupT5(nfile,atm,ierr)
     r2=dm_squ(atm%pts%la-atm%lam_c)+dm_squ(atm%pts%th-atm%thm_c)
 
     call dm_view(r2,ierr)
-    !id= r2 < (atm%mR**2)
-    !id= r2 < 1 
-    !id= dm_seqs(5,1)<2 
-    !atm%ghm=(atm%g*atm%hm0*1-dm_sqrt(r2)*(1.0/atm%mR)) .em. id
+    id= r2 < (atm%mR**2)
+    atm%ghm=(atm%g*atm%hm0*(1-dm_sqrt(r2)*(1.0/atm%mR))) .em. id
     
 !   call dm_view(atm%pts%x,ierr)
 !   call dm_view(atm%pts%y,ierr)
@@ -73,8 +71,8 @@ subroutine setupT5(nfile,atm,ierr)
 !   call dm_view(atm%pts%p_w,ierr)
 !   call dm_view(atm%f,ierr)
 !   call dm_view(r2,ierr)
-!   call dm_view(id,ierr)
-!   call dm_view(atm%ghm,ierr)
+    call dm_view(id,ierr)
+    call dm_view(atm%ghm,ierr)
     
     call dm_destroy(nodes,ierr)
     call dm_destroy(work,ierr)
