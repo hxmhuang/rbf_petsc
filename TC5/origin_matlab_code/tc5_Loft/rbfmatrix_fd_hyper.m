@@ -14,7 +14,6 @@ function [DPx,DPy,DPz,L] = rbfmatrix_fd_hyper(x,ep,fdsize,order,dim)
 % L - sparse dissipation matrix
 
 N = length(x);
-srange = sqrt(6*fdsize/N); % search range
 
 rbf = @(ep,rd2) exp(-ep^2*rd2);
 drbf = @(ep,rd2) -2*ep^2*exp(-ep^2*rd2);

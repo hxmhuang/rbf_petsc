@@ -31,7 +31,7 @@ A = ones(fdsize+1,fdsize+1); A(end,end) = 0;
 B = zeros(fdsize+1,1);
 
 idx = knnsearch(x,x,'k',fdsize);
-
+%dlmwrite('nn.md002.00009.txt',idx-1,' ')
 MaskMatrix=zeros(N,fdsize);
 A_new = ones(N+1,N+1); A(end,end) = 0;
 B_new1 = zeros(N+1,1);

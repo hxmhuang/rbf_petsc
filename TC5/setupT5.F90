@@ -4,12 +4,12 @@ subroutine setupT5(nfile,atm,ierr)
     use atm_type
     implicit none
 
-    type(Matrix),intent(in)    :: nfile
-    type(AtmType),intent(inout)       :: atm
-    type(Matrix)        :: nodes,work 
-    type(Matrix)	    ::  x,y,z,x2,xy,y2,xz,z2,yz,r2,id
-    real(kind=8)        :: pi
-    integer             :: ierr
+    type(Matrix),	intent(in)    :: nfile
+    type(AtmType),	intent(inout) :: atm
+    integer,		intent(out)   :: ierr
+    type(Matrix)        		  :: nodes,work 
+    type(Matrix)	    		  ::  x,y,z,x2,xy,y2,xz,z2,yz,r2,id
+    real(kind=8)         		  :: pi
 
     nodes=nfile
 
