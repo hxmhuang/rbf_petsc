@@ -132,17 +132,6 @@ subroutine rbf_distancematrix(A,B,C,ierr)
 end subroutine
 
 
-!B= exp(-ep^2*A). Note that A equals to r^2.
-subroutine rbf_guassian(ep,A,B,ierr)
-	implicit none
-	real(kind=8),	intent(in)	::  ep		
-	type(Matrix),	intent(in)	::	A 
-	type(Matrix),	intent(out)	::	B 
-	integer,		intent(out)	::	ierr
-   
-	B=dm_exp((-ep**2)*A) 
-end subroutine
-
 
 ! -----------------------------------------------------------------------
 ! Variables for projecting an arbitrary Cartesian vector onto the surface of the sphere.
@@ -201,6 +190,53 @@ subroutine rbf_coriolis_force(A,angle,B,ierr)
 	call dm_destroy(z,ierr)	
 end subroutine
 
+
+! -----------------------------------------------------------------------
+!Matlab example:
+!rbf = @(ep,rd2) exp(-ep^2*rd2)
+! -----------------------------------------------------------------------
+function rbf_guassian(ep,rd2) result(A)
+	implicit none
+	real(kind=8),	intent(in)		::  ep		
+	type(Matrix),	intent(in)		::	rd2 
+	type(Matrix)					::	A 
+	integer							::  ierr
+	A=dm_exp((-1.0)*(ep**2)*rd2)
+	call dm_set_implicit(A,ierr)
+end function 
+
+
+! -----------------------------------------------------------------------
+!Matlab example:
+!drbf = @(ep,rd2) -2*ep^2*exp(-ep^2*rd2)
+! -----------------------------------------------------------------------
+function drbf_guassian(ep,rd2) result(A)
+	implicit none
+	real(kind=8),	intent(in)		::  ep		
+	type(Matrix),	intent(in)		::	rd2 
+	type(Matrix)					::	A 
+	integer							::  ierr
+	A=(-2.0)*(ep**2)*dm_exp((-1.0)*(ep*ep)*rd2)
+	call dm_set_implicit(A,ierr)
+end function 
+
+
+! -----------------------------------------------------------------------
+!At present, we load the neighbour from a file
+! -----------------------------------------------------------------------
+!subroutine knnsearch(nodes,fdsize,nn,ierr)
+subroutine knnsearch(nn,ierr)
+	implicit none
+    !type(Matrix),	intent(in)	::  nodes	
+	!integer,	    intent(in)	::  fdsize	
+    ! the nearest neighbours
+    type(Matrix),	intent(out)	::  nn	
+	integer,		intent(out)	::	ierr
+    character*100   filename
+    
+    filename="nn.md002.00009.txt"
+    call dm_load(filename,nn,ierr)
+end subroutine
 
 
 end module
