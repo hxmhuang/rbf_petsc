@@ -8,7 +8,7 @@ z = atm.pts.z;
 
 
 % Calculate the RBF-FD differentiation matrices
-[DPx,DPy,DPz,L] = rbfmatrix_fd_hyper([x y z],ep,fdsize,order,dim);
+[DPx,DPy,DPz,L] = rbfmatrix_fd_hyper(atm,[x y z],ep,fdsize,order,dim);
 L = gamma*L;
 
 

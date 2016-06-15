@@ -18,23 +18,17 @@ main: ${OBJMAIN}  chkopts
 small:
 	make clean
 	make main 
-	-@${MPIEXEC} -n 4 ./main -ep 2.7 -debug -ksp_type bcgs -pc_type bjacobi -sub_ksp_type preonly -sub_pc_type sor
+	-@${MPIEXEC} -n 4 ./main -ep 2.7 -debug -ksp_type gmres -pc_type asm -sub_ksp_type preonly -sub_pc_type ilu 
 
 middle:
 	make clean
 	make main 
-	-@${MPIEXEC} -n 8 ./main -ep 2.7 -log_view -ksp_type bcgs -pc_type bjacobi -sub_ksp_type preonly -sub_pc_type sor
+	-@${MPIEXEC} -n 8 ./main -ep 2.7 -log_view -ksp_type gmres -pc_type asm -sub_ksp_type preonly -sub_pc_type ilu 
 
 big:
 	make clean
 	make main 
-	-@${MPIEXEC} -n 16 ./main -ep 2.7 -log_view -ksp_type bcgs -pc_type bjacobi -sub_ksp_type preonly -sub_pc_type sor
-
-huge:
-	make clean
-	make main 
-	-@${MPIEXEC} -n 16 ./main -ep 2.7 -log_view -ksp_type bcgs -pc_type bjacobi -sub_ksp_type preonly -sub_pc_type sor
-
+	-@${MPIEXEC} -n 16 ./main -ep 2.7 -log_view -ksp_type gmres -pc_type asm -sub_ksp_type preonly -sub_pc_type ilu 
 
 mainsjob:
 	qsub job_mains.job 

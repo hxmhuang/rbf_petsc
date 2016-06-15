@@ -1,4 +1,4 @@
-function [DPx,DPy,DPz,L] = rbfmatrix_fd_hyper(x,ep,fdsize,order,dim)
+function [DPx,DPy,DPz,L] = rbfmatrix_fd_hyper(atm,x,ep,fdsize,order,dim)
 %%% [D,L] = rbfmatrix_fd_tree(x,ep,alpha,fdsize,order,dim)
 % Requires kd-tree code.
 % IN:
@@ -30,7 +30,7 @@ A = ones(fdsize+1,fdsize+1); A(end,end) = 0;
 B = zeros(fdsize+1,1);
 
 idx = knnsearch(x,x,'k',fdsize);
-
+%dlmwrite('md059.03600.fd31.nn',idx-1, ' ')
 for j=1:N
     
     imat = idx(j,:);

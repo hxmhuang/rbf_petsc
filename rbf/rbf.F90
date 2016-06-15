@@ -234,9 +234,41 @@ subroutine knnsearch(nn,ierr)
 	integer,		intent(out)	::	ierr
     character*100   filename
     
-    filename="nn.md002.00009.txt"
+    filename="md002.00009.nn"
+    !filename="md059.03600.fd31.nn"
+    !filename="md059.03600.nn"
     call dm_load(filename,nn,ierr)
 end subroutine
+
+! -----------------------------------------------------------------------
+! Compute hypre 
+! -----------------------------------------------------------------------
+function hypre(ep2r2,d,k) result(p)
+	implicit none
+    !type(Matrix),	intent(in)	::  nodes	
+	!integer,	    intent(in)	::  fdsize	
+    ! the nearest neighbours
+    type(Matrix),	intent(in)	::  ep2r2	
+    type(Matrix)				:: 	p 
+    type(Matrix)				:: 	p0,p1,p2 
+    integer,	intent(in) 		::  d,k
+    integer						:: 	ierr 
+    integer						:: 	j 
+	
+	p0=dm_ones(ep2r2%nrow,1)
+	p1=4*ep2r2-2*d
+	do j=3,k+1
+		p2=(4*(ep2r2-2*j-d/2.0+4) .em. p1) - (8*(j-2)*(2*j+d-6) * p0)	
+		p0=p1
+		p1=p2
+	enddo
+	p=p2
+	call dm_set_implicit(p,ierr)
+	
+	call dm_destroy(p0,ierr) 
+	call dm_destroy(p1,ierr) 
+	call dm_destroy(p2,ierr) 
+end function 
 
 
 end module
