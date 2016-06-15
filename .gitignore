@@ -34,3 +34,6 @@
 *.dSYM/
 
 .DS_Store
+
+main
+test
