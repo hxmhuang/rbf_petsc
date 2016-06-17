@@ -48,7 +48,8 @@ subroutine rbfmatrix_fd_hypre(atm,ep,fdsize,order,dim,DPx,DPy,DPz,L,ierr)
 	m_0to2=dm_m2n(0,2)
 	m_0toN=dm_m2n(0,fdsize-1)
 	m_0	  =dm_zeros(1,1)	
- 	do j=0,N-1
+ 	!do j=0,N-1
+ 	do j=0,30
 !   !do j=0,0
  		if(myrank==0) print *,">Rbfmatrix_df_hypre: current", j, " step"
   		imat	= dm_trans(dm_getrow(idx,j))
