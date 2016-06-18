@@ -6,7 +6,7 @@ LOCDIR           = src/ksp/ksp/examples/tutorials/
 MANSEC           = KSP
 CLEANFILES       = main *.o *.mod 
 NP               = 1
-OBJ				 = dm_type.o dm_mat.o dm.o rbf.o atm_type.o setupT5.o rbfmatrix_fd_hypre.o test_case_5_cart_rk4_fd.o
+OBJ				 = dm_type.o dm_mat.o dm.o rbf.o atm_type.o setupT5.o rbfmatrix_fd_hypre.o computeInitialCondition.o evalCartRhs_fd.o test_case_5_cart_rk4_fd.o
 OBJMAIN			 = ${OBJ} main.o 
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

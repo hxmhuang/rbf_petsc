@@ -15,15 +15,16 @@ program main
     integer             :: ierr
     debug = .false.
 
-    fd=31 
-    tend=15
+    !fd=31 
+    fd=3 
+    tend=0.125 !unit in days
     order=4
     dim=2
 	ep=2.7
     dt=900
     gamma=-2.98e-17
-    !filename="md002.00009"
-    filename="md059.03600"
+    filename="md002.00009"
+    !filename="md059.03600"
     !filename="md165.27556"   
     call dm_init(ierr)
     
