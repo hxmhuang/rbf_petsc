@@ -234,7 +234,10 @@ subroutine knnsearch(nn,ierr)
 	integer,		intent(out)	::	ierr
     character*100   filename
     
-    filename="md002.00009.nn"
+    !filename="md002.00009.nn"
+    !filename="md003.00016.fd7.nn"
+    filename="md009.00100.fd31.nn"
+    !filename="md019.00400.fd31.nn"
     !filename="md059.03600.fd31.nn"
     !filename="md059.03600.nn"
     call dm_load(filename,nn,ierr)

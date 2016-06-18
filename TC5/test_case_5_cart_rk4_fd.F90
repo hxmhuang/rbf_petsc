@@ -25,8 +25,8 @@ subroutine test_case_5_cart_rk4_fd(nfile,ep,fdsize,order,dim,gamma,dt,tend,ierr)
 	gradghm= (DPx*atm%ghm .hj. DPy*atm%ghm .hj. DPz*atm%ghm)*(1/atm%a)
 
 	call dm_comm_rank(myrank,ierr)
-	do i=1,floor(tend*24*3600/dt)			
-	!do i=1,2			
+	!do i=1,floor(tend*24*3600/dt)	
+	do i=1,0			
  		if(myrank==0) print *,">test_case_5_cart_rk4_rd: the current time is", i*dt/3600.0, "hours"
  		K=H
  		call evalCartRhs_fd(d1,K,DPx,DPy,DPz,L,atm,gradghm,ierr)	

@@ -16,14 +16,17 @@ program main
     debug = .false.
 
     !fd=31 
-    fd=3 
+    fd=31 
     tend=0.125 !unit in days
     order=4
     dim=2
 	ep=2.7
     dt=900
     gamma=-2.98e-17
-    filename="md002.00009"
+    !filename="md002.00009"
+	!filename="md003.00016"
+    filename="md009.00100"
+    !filename="md019.00400"
     !filename="md059.03600"
     !filename="md165.27556"   
     call dm_init(ierr)
