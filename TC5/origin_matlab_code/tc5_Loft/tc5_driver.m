@@ -8,8 +8,8 @@
 % Shallow water simulations on a sphere, J. Comput. Phys. 231 (2012) 4078?095
 
 clear all
-%fd = 31;    % size of RBF-FD stencil
 fd = 3;    % size of RBF-FD stencil
+%fd = 7;    % size of RBF-FD stencil
 
 tend  = 15; % ending time, needs to be in days
 order = 4;  % power of Laplacian, L^order
@@ -50,7 +50,10 @@ plt=1;
 
 %fname = load('md/md001.00004');
 fname = load('md/md002.00009');
+%fname = load('md/md003.00016');
+%fname = load('md/md009.00100');
 
+%fname = load('md/md019.00400');
 %fname = load('md059.03600');
 
 %fname = load('md079.06400');

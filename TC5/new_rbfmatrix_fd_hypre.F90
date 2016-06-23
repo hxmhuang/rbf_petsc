@@ -32,7 +32,6 @@ subroutine new_rbfmatrix_fd_hypre(atm,ep,fdsize,order,dim,DPx,DPy,DPz,L,ierr)
     iend=x%iend
     call dm_comm_rank(myrank,ierr)
 
-
     call knnsearch(idx,ierr) 
 
 	Mask=dm_zeros(N,N)
@@ -77,7 +76,6 @@ subroutine new_rbfmatrix_fd_hypre(atm,ep,fdsize,order,dim,DPx,DPy,DPz,L,ierr)
 	
 	!do j=ista,iend-1
 	do j=ista,ista
-		print *, "ista=",ista,"iend=",iend,"myrank=",myrank,"j=",j
 		K0=dm_getcol(rd2v,j)
 		RightV1= dm_getcol(dp1,j) .em. K0	
 		RightV2= dm_getcol(dp2,j) .em. K0	
@@ -95,9 +93,7 @@ subroutine new_rbfmatrix_fd_hypre(atm,ep,fdsize,order,dim,DPx,DPy,DPz,L,ierr)
 	
 		ExtV= RightV1 .vj. m_0 
 		weights= ExtM .inv. ExtV
-		print *, "HERE1===="	
 		DPx=DPx .hj. weights
-		print *, "HERE2===="	
 		print *, ">DPx="
 		call dm_view(DPx, ierr)
 	

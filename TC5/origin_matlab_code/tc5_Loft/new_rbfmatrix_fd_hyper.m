@@ -24,7 +24,7 @@ MaskMatrix=zeros(N,N);
 
 for j=1:N
     imat = idx(j,:);
-    MaskMatrix(j,imat)=1
+    MaskMatrix(j,imat)=1;
 end
 
 dp1 = (-atm.pts.p_u * x' .* MaskMatrix)';
@@ -52,27 +52,27 @@ for j=1:N
     ExtM=[K5 MaskMatrix(j,:)'; MaskMatrix(j,:) 0]
     
     ExtV=[RightV1;0];
-    weights1= ExtM\ExtV;
-    DPx(:,j)= weights1(1:N);
+    weights= ExtM\ExtV;
+    DPx(:,j)= weights;
     
     ExtV=[RightV2;0]
-    weights2= ExtM\ExtV;
-    DPy(:,j)= weights2(1:N);
+    weights= ExtM\ExtV;
+    DPy(:,j)= weights;
 
     ExtV=[RightV3;0]
-    weights3= ExtM\ExtV;
-    DPz(:,j)= weights3(1:N);
+    weights= ExtM\ExtV;
+    DPz(:,j)= weights;
  
     
     K6=rd2(:,j).*MaskMatrix(j,:)';
     RightV4=ep^(2*order)*hyper(ep^2*K6,dim,order).*exp(-ep^2*K6).*MaskMatrix(j,:)';
     ExtV=[RightV4;0]
-    weights4= ExtM\ExtV;
-    L(:,j)  = weights4(1:N);
+    weights= ExtM\ExtV;
+    L(:,j)  = weights;
 end
-DPx=DPx';
-DPy=DPy';
-DPz=DPz';
+DPx=DPx(1:N,:)';
+DPy=DPy(1:N,:)';
+DPz=DPz(1:N,:)';
 L=L';
 
 

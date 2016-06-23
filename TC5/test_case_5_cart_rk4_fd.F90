@@ -14,7 +14,6 @@ subroutine test_case_5_cart_rk4_fd(nfile,ep,fdsize,order,dim,gamma,dt,tend,ierr)
     type(Matrix)				:: gradghm 
     !real(kind=8)    			:: timeday 
 	integer 					:: i,myrank
-
     call setupT5(nfile,atm,ierr)
 	
 	call new_rbfmatrix_fd_hypre(atm,ep,fdsize,order,dim,DPx,DPy,Dpz,L,ierr)	
