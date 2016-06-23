@@ -41,6 +41,11 @@ program main
     
     call dm_load(filename,fname,ierr)
 	
+	if(mod(fname%nrow,mysize) /= 0) then
+		if(myrank==0) print *,"Error Line=",__LINE__," in ",__FILE__,". The number of processes should be divide by the number of points to keep good load-balance. Here nrow=",fname%nrow,"mysize=",mysize	
+		stop
+	endif
+	
     call test_case_5_cart_rk4_fd(fname,ep,fd,order,dim,gamma,dt,tend,ierr) 
 
 

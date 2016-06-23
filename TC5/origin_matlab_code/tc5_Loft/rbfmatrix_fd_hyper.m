@@ -1,8 +1,7 @@
-function [DPx,DPy,DPz,L] = rbfmatrix_fd_hyper(atm,x,ep,fdsize,order,dim)
+function [DPx,DPy,DPz,L] = rbfmatrix_fd_hyper(atm,ep,fdsize,order,dim)
 %%% [D,L] = rbfmatrix_fd_tree(x,ep,alpha,fdsize,order,dim)
 % Requires kd-tree code.
 % IN:
-% x - nodes in this subroutine, NOT coordinate 'x' 
 % ep - shape parameter
 % fdsize - stencil size (good choices: 31, 50, 74, 101)
 % order - L = L^order
@@ -12,7 +11,7 @@ function [DPx,DPy,DPz,L] = rbfmatrix_fd_hyper(atm,x,ep,fdsize,order,dim)
 % DPy - sparse differentiation matrix
 % DPy - sparse differentiation matrix
 % L - sparse dissipation matrix
-
+x= [atm.pts.x atm.pts.y atm.pts.z];
 N = length(x);
 
 rbf = @(ep,rd2) exp(-ep^2*rd2);
