@@ -49,24 +49,24 @@ for j=1:N
     K3= K1.*K2;
     K4= K3|eye(N);
     K5= rbf_rd2.* K4;
-    ExtM=[K5 MaskMatrix(j,:)'; MaskMatrix(j,:) 0]
+    ExtM=[K5 MaskMatrix(j,:)'; MaskMatrix(j,:) 0];
     
     ExtV=[RightV1;0];
     weights= ExtM\ExtV;
     DPx(:,j)= weights;
     
-    ExtV=[RightV2;0]
+    ExtV=[RightV2;0];
     weights= ExtM\ExtV;
     DPy(:,j)= weights;
 
-    ExtV=[RightV3;0]
+    ExtV=[RightV3;0];
     weights= ExtM\ExtV;
     DPz(:,j)= weights;
  
     
     K6=rd2(:,j).*MaskMatrix(j,:)';
     RightV4=ep^(2*order)*hyper(ep^2*K6,dim,order).*exp(-ep^2*K6).*MaskMatrix(j,:)';
-    ExtV=[RightV4;0]
+    ExtV=[RightV4;0];
     weights= ExtM\ExtV;
     L(:,j)  = weights;
 end

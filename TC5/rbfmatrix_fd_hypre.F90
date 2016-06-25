@@ -53,7 +53,7 @@ subroutine rbfmatrix_fd_hypre(atm,ep,fdsize,order,dim,DPx,DPy,DPz,L,ierr)
 !   !do j=0,0
  		if(myrank==0) print *,">Rbfmatrix_df_hypre: current", j, " step"
   		imat	= dm_trans(dm_getrow(idx,j))
-  		ximat  	= dm_submatrix(x,imat,m_0to2) 
+  		ximat  	= dm_getsub(x,imat,m_0to2) 
     	
     	ind_i = ind_i .vj. dm_constants(fdsize,1,j)	
     	ind_j = ind_j .vj. imat 
@@ -71,17 +71,17 @@ subroutine rbfmatrix_fd_hypre(atm,ep,fdsize,order,dim,DPx,DPy,DPz,L,ierr)
     	B=(-1.0)*ximat * dm_trans(dm_getrow(atm%pts%p_u,j)) .em. drbf_rd2v
     	B=B .vj. m_0
     	weights= A .inv. B
-    	weightsDx= weightsDx .vj. (dm_submatrix(weights, m_0toN, m_0)) 
+    	weightsDx= weightsDx .vj. (dm_getsub(weights, m_0toN, m_0)) 
     	
      	B=(-1.0)*ximat * dm_trans(dm_getrow(atm%pts%p_v,j)) .em. drbf_rd2v
      	B=B .vj. m_0 
     	weights= A .inv. B
-    	weightsDy= weightsDy .vj. (dm_submatrix(weights, m_0toN, m_0)) 
+    	weightsDy= weightsDy .vj. (dm_getsub(weights, m_0toN, m_0)) 
     		
     	B=(-1.0)*ximat * dm_trans(dm_getrow(atm%pts%p_w,j)) .em. drbf_rd2v
     	B=B .vj. m_0 
     	weights= A .inv. B
-    	weightsDz= weightsDz .vj. (dm_submatrix(weights, m_0toN, m_0)) 
+    	weightsDz= weightsDz .vj. (dm_getsub(weights, m_0toN, m_0)) 
     	
     	!There is a bug to put a MAT_XTYPE_IMPLICIT matrix into a function directly.
     	!hypre_result=hypre(ep**2 * rd2v,dim,order)
@@ -91,7 +91,7 @@ subroutine rbfmatrix_fd_hypre(atm,ep,fdsize,order,dim,DPx,DPy,DPz,L,ierr)
     	B=ep**(2*order) * hypre_result .em. (rbf_guassian(ep,rd2v))
     	B=B .vj. m_0 
     	weights= A .inv. B
-    	weightsL= weightsL .vj. (dm_submatrix(weights, m_0toN, m_0)) 
+    	weightsL= weightsL .vj. (dm_getsub(weights, m_0toN, m_0)) 
 		
     enddo
 	

@@ -49,14 +49,14 @@ dsply=1;
 plt=1; 
 
 %fname = load('md/md001.00004');
-fname = load('md/md002.00009');
+%fname = load('md/md002.00009');
 %fname = load('md/md003.00016');
 %fname = load('md/md009.00100');
 
 %fname = load('md/md019.00400');
 %fname = load('md059.03600');
 
-%fname = load('md079.06400');
+fname = load('md079.06400');
 
 %%% Icosehedral
 %fname = load('icos40962');
