@@ -1,4 +1,4 @@
-% Evaluates the RHS (spatial derivatives) for the Cartesian RBF formulation of 
+ }}% Evaluates the RHS (spatial derivatives) for the Cartesian RBF formulation of 
 % the shallow water equations with projected gradients.
 % This function applies to Test Case 5, which contains the forcing of the mountain
 function F = evalCartRhs_fd(H,DPx,DPy,DPz,L,atm,gradghm)
