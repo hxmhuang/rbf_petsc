@@ -87,6 +87,4 @@ subroutine setupT5(nfile,atm,ierr)
 	call dm_destroy(r2,ierr)	
 	call dm_destroy(id,ierr)	
 
-
-
 end subroutine

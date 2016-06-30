@@ -240,7 +240,7 @@ subroutine knnsearch(nn,ierr)
     !filename="md019.00400.fd31.nn"
     !filename="md059.03600.fd31.nn"
     !filename="md059.03600.nn"
-    call dm_load(filename,nn,ierr)
+    call dm_load(filename,.true.,nn,ierr)
 end subroutine
 
 ! -----------------------------------------------------------------------

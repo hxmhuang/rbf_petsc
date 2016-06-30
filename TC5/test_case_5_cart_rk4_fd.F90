@@ -16,7 +16,7 @@ subroutine test_case_5_cart_rk4_fd(nfile,ep,fdsize,order,dim,gamma,dt,tend,ierr)
 	integer 					:: i,myrank
     call setupT5(nfile,atm,ierr)
 	
-	call new_rbfmatrix_fd_hypre(atm,ep,fdsize,order,dim,DPx,DPy,Dpz,L,ierr)	
+	call rbfmatrix_fd_hypre(atm,ep,fdsize,order,dim,DPx,DPy,Dpz,L,ierr)	
 	L  = gamma * L
 
 !   call computeInitialCondition(atm,H,ierr)

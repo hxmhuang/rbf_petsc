@@ -2,8 +2,8 @@ function [H,atm] = test_case_5_cart_rk4_fd(nfile,ep,fdsize,order,dim,gamma,dt,te
 
 % Initialize the constants for the Williamson test case 5.
 atm = setupT5(nfile);
-x = atm.pts.x; 
-y = atm.pts.y; 
+x = atm.pts.x;
+y = atm.pts.y;
 z = atm.pts.z;
 
 
