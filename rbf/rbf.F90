@@ -59,7 +59,7 @@ subroutine rbf_createpoints(A,m,n,ierr)
         idxn(j)=j-1
     enddo
     !print *, "nlocal=",nlocal,"idxm=",idxm,"idxn=",idxn,"rows=",rows
-    call dm_setvalues(A,nlocal,idxm,ncol,idxn,rows,ierr) 
+    call dm_setvalues(A,idxm,idxn,rows,ierr) 
     
     deallocate(idxm,idxn,rows)
 end subroutine 
@@ -225,22 +225,31 @@ end function
 !At present, we load the neighbour from a file
 ! -----------------------------------------------------------------------
 !subroutine knnsearch(nodes,fdsize,nn,ierr)
-subroutine knnsearch(nn,ierr)
+subroutine knnsearch(nn,localx,ierr)
 	implicit none
     !type(Matrix),	intent(in)	::  nodes	
 	!integer,	    intent(in)	::  fdsize	
     ! the nearest neighbours
     type(Matrix),	intent(out)	::  nn	
+    type(Matrix),	intent(out)	::  localx 
 	integer,		intent(out)	::	ierr
     character*100   filename
     
-    filename="md002.00009.nn"
+    !filename="md059.03600"
+    !filename="md019.00400"
+	!filename="md003.00016"
+    filename="md002.00009"
+    call dm_load(filename,.false.,localx,ierr)
+  	localx=dm_getsub(localx, dm_m2n(0,localx%nrow-1, .false.), dm_m2n(0,2,.false.) ) 
+		
+	filename="md002.00009.nn"
     !filename="md003.00016.fd7.nn"
     !filename="md009.00100.fd31.nn"
     !filename="md019.00400.fd31.nn"
     !filename="md059.03600.fd31.nn"
     !filename="md059.03600.nn"
-    call dm_load(filename,.true.,nn,ierr)
+    !call dm_load(filename,.true.,nn,ierr)
+    call dm_load(filename,.false.,nn,ierr)
 end subroutine
 
 ! -----------------------------------------------------------------------
@@ -258,7 +267,7 @@ function hypre(ep2r2,d,k) result(p)
     integer						:: 	ierr 
     integer						:: 	j 
 	
-	p0=dm_ones(ep2r2%nrow,1)
+	p0=dm_ones(ep2r2%nrow,1,ep2r2%isGlobal)
 	p1=4*ep2r2-2*d
 	do j=3,k+1
 		p2=(4*(ep2r2-2*j-d/2.0+4) .em. p1) - (8*(j-2)*(2*j+d-6) * p0)	
@@ -272,6 +281,5 @@ function hypre(ep2r2,d,k) result(p)
 	call dm_destroy(p1,ierr) 
 	call dm_destroy(p2,ierr) 
 end function 
-
 
 end module

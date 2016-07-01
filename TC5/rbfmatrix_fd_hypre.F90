@@ -10,78 +10,106 @@ subroutine rbfmatrix_fd_hypre(atm,ep,fdsize,order,dim,DPx,DPy,DPz,L,ierr)
     type(Matrix),	intent(out)   :: DPx,DPy,DPz,L 
     integer,intent(out)           :: ierr
     type(Matrix)        		  :: A,B,idx,imat
-    type(Matrix)        		  :: x,ximat
+    type(Matrix)        		  :: dp,x,ximat
     type(Matrix)        		  :: rd2,rd2v,drbf_rd2v,ep2r2
-    type(Matrix)        		  :: weights,weightsDx,weightsDy,weightsDz,weightsL
-    type(Matrix)        		  :: ind_i,ind_j 
+    type(Matrix)        		  :: weights
     type(Matrix)        		  :: hypre_result
     type(Matrix)        		  :: m_0,m_0to2,m_0toN 
-	integer 					  :: N,j,myrank
+	integer 					  :: N,i,j,myrank
 	integer 					  :: ista,iend
-    
+   	real(kind=8)				  :: values(3)
+   	real(kind=8)				  :: warray(fdsize)
+   	integer						  :: idxm1(1),idxn1(3)
+   	integer						  :: idxm2(3),idxn2(1)
+   	integer						  :: idxm3(fdsize),idxn3(1)
+   	integer						  :: idxm4(fdsize),idxn4(1)
+   	integer						  :: idxm5(1),idxn5(fdsize)
 	N=atm%pts%x%nrow	
     ista=atm%pts%x%ista
     iend=atm%pts%x%iend
 
-    !weightsDx=dm_zeros(N,N)
-    !weightsDy=dm_zeros(N,N)
-    !weightsDz=dm_zeros(N,N)
-    !weightsL =dm_zeros(N,N)
-	!ind_i =dm_zeros(N*fdsize,1)		
-    !ind_j =dm_zeros(N*fdsize,1)
+    DPx=dm_zeros(N,N)
+    DPy=dm_zeros(N,N)
+    DPz=dm_zeros(N,N)
+    L  =dm_zeros(N,N)
     
-    A=dm_ones(fdsize+1,fdsize+1)
-    B=dm_zeros(fdsize+1,1)	
+    A=dm_ones(fdsize+1,fdsize+1,.false.)
+    B=dm_zeros(fdsize+1,1,.false.)	
 	
-	call knnsearch(idx,ierr) 
-  
-    x = atm%pts%x .hj. atm%pts%y .hj. atm%pts%z 
+	call knnsearch(idx,x,ierr) 
+    !x = atm%pts%x .hj. atm%pts%y .hj. atm%pts%z 
 	call dm_comm_rank(myrank,ierr)
 	
-	ind_i=dm_zeros(0,1)
-	ind_j=dm_zeros(0,1)
-	weightsDx=dm_zeros(0,1)
-	weightsDy=dm_zeros(0,1)
-	weightsDz=dm_zeros(0,1)
-	weightsL=dm_zeros(0,1)
+	m_0to2=dm_m2n(0,2,.false.)
+	m_0toN=dm_m2n(0,fdsize-1,.false.)
+	m_0	  =dm_zeros(1,1,.false.)	
 
-	m_0to2=dm_m2n(0,2)
-	m_0toN=dm_m2n(0,fdsize-1)
-	m_0	  =dm_zeros(1,1)	
- 	do j=0,N-1
+	dp	  =dm_zeros(3,1,.false.)	
+
+ 	idxm1(1)=0	
+ 	idxn2(1)=0	
+ 	idxn3(1)=0	
+	idxn4(1)=0
+	idxm5(1)=0
+	do i=1,3
+		idxn1(i)=i-1
+		idxm2(i)=i-1
+	enddo
+	do i=1,fdsize
+		idxm3(i)=i-1	
+		idxm4(i)=i-1
+		idxn5(i)=i-1
+	enddo
+! 	do j=0,N-1
  	!do j=0,9
-!   !do j=0,0
- 		if(myrank==0) print *,">Rbfmatrix_df_hypre: current", j, " step"
-  		imat	= dm_trans(dm_getrow(idx,j))
-  		ximat  	= dm_getsub(x,imat,m_0to2) 
+    do j=ista,iend-1
+		if(myrank==0) print *, ">Rbfmatrix_fd_hypre: current step is",j 
+    	imat	= dm_trans(dm_getrow(idx,j))
+    	ximat  	= dm_getsub(x,imat,m_0to2) 
+		!if(myrank==0) call dm_view(ximat,ierr)    	
     	
-    	ind_i = ind_i .vj. dm_constants(fdsize,1,j)	
-    	ind_j = ind_j .vj. imat 
-
  		rd2= 2*(1-dm_xyt(ximat,ximat))
-  		rd2= (rd2>0) .em. rd2
+   		rd2= (rd2>0) .em. rd2
   		rd2v= dm_getcol(rd2,0)
     	
  		A=rbf_guassian(ep,rd2)
     	drbf_rd2v=drbf_guassian(ep,rd2v)
  		
-    	A= A .hj. (dm_ones(A%nrow,1))
- 		A= A .vj. (dm_ones(1,A%ncol))
+    	A= A .hj. (dm_ones(A%nrow,1,A%isGlobal))
+ 		A= A .vj. (dm_ones(1,A%ncol,A%isGlobal))
      	call dm_setvalue(A,A%nrow-1,A%ncol-1,0,ierr)	
-    	B=(-1.0)*ximat * dm_trans(dm_getrow(atm%pts%p_u,j)) .em. drbf_rd2v
+		
+		idxm1(1)=j
+ 		idxm5(1)=j
+		call dm_getvalues(imat,idxm4,idxn4,warray,ierr)
+ 		idxn5=int(warray)	
+		
+		!compute DPx		
+		call dm_getvalues(atm%pts%p_u,idxm1,idxn1,values,ierr)		
+ 		call dm_setvalues(dp,idxm2,idxn2,values,ierr)	
+		B=(-1.0)* ximat * dp .em. drbf_rd2v
     	B=B .vj. m_0
     	weights= A .inv. B
-    	weightsDx= weightsDx .vj. (dm_getsub(weights, m_0toN, m_0)) 
+		call dm_getvalues(weights,idxm3,idxn3,warray,ierr)		
+		call dm_setvalues(DPx,idxm5,idxn5,warray,ierr)
     	
-     	B=(-1.0)*ximat * dm_trans(dm_getrow(atm%pts%p_v,j)) .em. drbf_rd2v
-     	B=B .vj. m_0 
+		!compute DPy		
+		call dm_getvalues(atm%pts%p_v,idxm1,idxn1,values,ierr)		
+ 		call dm_setvalues(dp,idxm2,idxn2,values,ierr)	
+		B=(-1.0)* ximat * dp .em. drbf_rd2v
+    	B=B .vj. m_0
     	weights= A .inv. B
-    	weightsDy= weightsDy .vj. (dm_getsub(weights, m_0toN, m_0)) 
+		call dm_getvalues(weights,idxm3,idxn3,warray,ierr)		
+		call dm_setvalues(DPy,idxm5,idxn5,warray,ierr)
     		
-    	B=(-1.0)*ximat * dm_trans(dm_getrow(atm%pts%p_w,j)) .em. drbf_rd2v
-    	B=B .vj. m_0 
+		!compute DPz		
+		call dm_getvalues(atm%pts%p_w,idxm1,idxn1,values,ierr)		
+ 		call dm_setvalues(dp,idxm2,idxn2,values,ierr)	
+		B=(-1.0)* ximat * dp .em. drbf_rd2v
+    	B=B .vj. m_0
     	weights= A .inv. B
-    	weightsDz= weightsDz .vj. (dm_getsub(weights, m_0toN, m_0)) 
+		call dm_getvalues(weights,idxm3,idxn3,warray,ierr)		
+		call dm_setvalues(DPz,idxm5,idxn5,warray,ierr)
     	
     	!There is a bug to put a MAT_XTYPE_IMPLICIT matrix into a function directly.
     	!hypre_result=hypre(ep**2 * rd2v,dim,order)
@@ -91,29 +119,22 @@ subroutine rbfmatrix_fd_hypre(atm,ep,fdsize,order,dim,DPx,DPy,DPz,L,ierr)
     	B=ep**(2*order) * hypre_result .em. (rbf_guassian(ep,rd2v))
     	B=B .vj. m_0 
     	weights= A .inv. B
-    	weightsL= weightsL .vj. (dm_getsub(weights, m_0toN, m_0)) 
+		call dm_getvalues(weights,idxm3,idxn3,warray,ierr)		
+		call dm_setvalues(L,idxm5,idxn5,warray,ierr)
+!   	weightsL= weightsL .vj. (dm_getsub(weights, m_0toN, m_0)) 
 		
     enddo
 	
-	DPx=dm_sparse(ind_i,ind_j,weightsDx,N,N)
-	DPy=dm_sparse(ind_i,ind_j,weightsDy,N,N)
-	DPz=dm_sparse(ind_i,ind_j,weightsDz,N,N)
-	L  =dm_sparse(ind_i,ind_j,weightsL,N,N)
-	!call dm_view(DPx,ierr)
-	!call dm_view(DPy,ierr)
-	!call dm_view(DPz,ierr)
-	!call dm_view(L,ierr)
+!	call dm_view(DPx,ierr)
+!	call dm_view(DPy,ierr)
+!	call dm_view(DPz,ierr)
+!	call dm_view(L,ierr)
     call dm_destroy(A,ierr) 
     call dm_destroy(B,ierr) 
     call dm_destroy(idx,ierr) 
     call dm_destroy(x,ierr) 
-	call dm_destroy(ind_i,ierr) 
- 	call dm_destroy(ind_j,ierr) 
+    call dm_destroy(dp,ierr) 
  	call dm_destroy(weights,ierr) 
- 	call dm_destroy(weightsDx,ierr) 
- 	call dm_destroy(weightsDy,ierr) 
-    call dm_destroy(weightsDz,ierr) 
-    call dm_destroy(weightsL,ierr) 
     call dm_destroy(imat,ierr) 
     call dm_destroy(ximat,ierr) 
     call dm_destroy(rd2,ierr) 

@@ -17,6 +17,7 @@ program main
 
     !fd=31 
     fd=3 
+    !fd=7 
     tend=0.125 !unit in days
     order=4
     dim=2

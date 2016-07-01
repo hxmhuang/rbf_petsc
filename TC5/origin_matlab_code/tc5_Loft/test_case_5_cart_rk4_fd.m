@@ -8,9 +8,7 @@ z = atm.pts.z;
 
 
 % Calculate the RBF-FD differentiation matrices
-[DPx_old,DPy_old,DPz_old,L_old] = rbfmatrix_fd_hyper(atm,ep,fdsize,order,dim);
-
-%[DPx,DPy,DPz,L] = new_rbfmatrix_fd_hyper(atm,ep,fdsize,order,dim);
+[DPx,DPy,DPz,L] = rbfmatrix_fd_hyper(atm,ep,fdsize,order,dim);
 L = gamma*L;
 
 % Initial condition.
@@ -35,7 +33,7 @@ dsply_rate = 10;       % Number of time-steps to wait before plotting a result.
 timeday = zeros((3600/dt)*24*tend,1); % create space in memory for the time in days
 
 % Time-step using RK4
-for nt=1:tend*24*3600
+for nt=1:tend*24*3600/dt
    K = H;
    d1 = dt*evalCartRhs_fd(K,DPx,DPy,DPz,L,atm,gradghm);
    K = H + 0.5*d1;
