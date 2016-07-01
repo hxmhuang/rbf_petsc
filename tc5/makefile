@@ -15,6 +15,11 @@ include ${PETSC_DIR}/lib/petsc/conf/rules
 main: ${OBJMAIN}  chkopts
 	-${FLINKER} -o main ${OBJMAIN}  ${PETSC_KSP_LIB}
 
+tiny:
+	make clean
+	make main 
+	-@${MPIEXEC} -n 1 ./main -ep 2.7 -debug -ksp_type gmres -pc_type asm -sub_ksp_type preonly -sub_pc_type ilu 
+
 small:
 	make clean
 	make main 

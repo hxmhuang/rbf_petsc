@@ -32,8 +32,8 @@ program main
     ctrs=dsites
     call rbf_distancematrix(dsites,ctrs,DM_data,ierr)
     call rbf_distancematrix(epoints,ctrs,DM_eval,ierr)
-    call rbf_guassian(ep,DM_data,IM,ierr)
-    call rbf_guassian(ep,DM_eval,EM,ierr)
+    IM=rbf_guassian(ep,DM_data)
+    EM=rbf_guassian(ep,DM_eval)
    	s=EM*(IM .inv. rhs)
 	maxerr=dm_norm_inf(s-exact)
 	rmserr=dm_norm_2(s-exact)/neval 
