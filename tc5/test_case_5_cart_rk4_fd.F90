@@ -15,8 +15,8 @@ subroutine test_case_5_cart_rk4_fd(nfile,ep,fdsize,order,dim,gamma,dt,tend,ierr)
     !real(kind=8)    			:: timeday 
 	integer 					:: i,myrank
     call setupT5(nfile,atm,ierr)
-	
-	call rbfmatrix_fd_hypre(atm,ep,fdsize,order,dim,DPx,DPy,Dpz,L,ierr)	
+ 	
+    call rbfmatrix_fd_hypre(atm,ep,fdsize,order,dim,DPx,DPy,Dpz,L,ierr)	
  	L  = gamma * L
 
     call computeInitialCondition(atm,H,ierr)
@@ -24,9 +24,7 @@ subroutine test_case_5_cart_rk4_fd(nfile,ep,fdsize,order,dim,gamma,dt,tend,ierr)
     gradghm= (DPx*atm%ghm .hj. DPy*atm%ghm .hj. DPz*atm%ghm)*(1/atm%a)
 
     call dm_comm_rank(myrank,ierr)
-	do i=1,floor(tend*24*3600/dt)	
-
-!    do i=1,2			
+    do i=1,floor(tend*24*3600/dt)	
  		if(myrank==0) print *,">test_case_5_cart_rk4_rd: the current time is", i*dt/3600.0, "hours"
  		K=H
  		call evalCartRhs_fd(d1,K,DPx,DPy,DPz,L,atm,gradghm,ierr)	
@@ -42,7 +40,7 @@ subroutine test_case_5_cart_rk4_fd(nfile,ep,fdsize,order,dim,gamma,dt,tend,ierr)
     	call dm_destroy(d3,ierr)
     	call dm_destroy(d4,ierr)
     enddo
-	!call dm_view(H,ierr)    
+     call dm_view(H,ierr)    
     call dm_destroy(gradghm,ierr)	
     call dm_destroy(DPx,ierr)
     call dm_destroy(DPy,ierr)

@@ -56,5 +56,3 @@ program main
 
     call dm_finalize(ierr)
 end program
-
-

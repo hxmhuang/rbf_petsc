@@ -233,6 +233,7 @@ subroutine knnsearch(nn,localx,ierr)
     type(Matrix),	intent(out)	::  nn	
     type(Matrix),	intent(out)	::  localx 
 	integer,		intent(out)	::	ierr
+	integer						:: 	i
     character*100   filename
     
     !filename="md059.03600"
@@ -240,7 +241,8 @@ subroutine knnsearch(nn,localx,ierr)
 	!filename="md003.00016"
     filename="md002.00009"
     call dm_load(filename,.false.,localx,ierr)
-  	localx=dm_getsub(localx, dm_m2n(0,localx%nrow-1, .false.), dm_m2n(0,2,.false.) ) 
+  	!localx=dm_getsub(localx, dm_m2n(0,localx%nrow-1, .false.), dm_m2n(0,2,.false.) ) 
+  	localx=dm_getsub(localx,(/(i,i=0,localx%nrow-1)/), (/0,1,2/) ) 
 		
 	filename="md002.00009.nn"
     !filename="md003.00016.fd7.nn"

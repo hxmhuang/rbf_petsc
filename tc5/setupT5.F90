@@ -10,23 +10,24 @@ subroutine setupT5(nfile,atm,ierr)
     type(Matrix)        		  :: nodes,work 
     type(Matrix)	    		  ::  x,y,z,x2,xy,y2,xz,z2,yz,r2,id
     real(kind=8)         		  :: pi
-
+	integer							:: ista1,iend1
     nodes=nfile
 
  	x=dm_getcol(nodes,0)
  	y=dm_getcol(nodes,1)
  	z=dm_getcol(nodes,2)
 
-    atm%pts%x=x
+    call MatGetOwnershipRange(Y,ista1,iend1,ierr)
+	print *,"ista1=",ista1,"iend1=",iend1 
+	atm%pts%x=x
     atm%pts%y=y
     atm%pts%z=z
-    
+  
     call dm_cart2sph(nodes,work,ierr)
 
     atm%pts%la=dm_getcol(work,0)
     atm%pts%th=dm_getcol(work,1)
     atm%pts%r =dm_getcol(work,2)
-
  	x2= 1-dm_squ(x)
     y2= 1-dm_squ(y)
     z2= 1-dm_squ(z)
