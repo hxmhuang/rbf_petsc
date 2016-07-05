@@ -51,11 +51,11 @@ subroutine evalCartRhs_fd(F,H,DPx,DPy,DPz,L,atm,gradghm,ierr)
 	Tz2=dm_getcol(Tz,2)	
 	Tz3=dm_getcol(Tz,3)	
 
-	p = (-1.0)*( (H0 .em. Tx0) + (H1 .em. Ty0) + (H2 .em. Tz0) + (f. em. ((y .em. H2) - (z .em. H1))) + Tx3 )
+	p = (-1.0)*( (H0 .em. Tx0) + (H1 .em. Ty0) + (H2 .em. Tz0) + (f .em. ((y .em. H2) - (z .em. H1))) + Tx3 )
 
-	q = (-1.0)*( (H0 .em. Tx1) + (H1 .em. Ty1) + (H2 .em. Tz1) + (f. em. ((z .em. H0) - (x .em. H2))) + Ty3)  
+	q = (-1.0)*( (H0 .em. Tx1) + (H1 .em. Ty1) + (H2 .em. Tz1) + (f .em. ((z .em. H0) - (x .em. H2))) + Ty3)  
 	
-	s = (-1.0)*( (H0 .em. Tx2) + (H1 .em. Ty2) + (H2 .em. Tz2) + (f. em. ((x .em. H1) - (y .em. H0))) + Tz3) 
+	s = (-1.0)*( (H0 .em. Tx2) + (H1 .em. Ty2) + (H2 .em. Tz2) + (f .em. ((x .em. H1) - (y .em. H0))) + Tz3) 
 	!print *, "=======p========"
 	!call dm_view(p,ierr)
 	!F=dm_zeros(H%nrow,H%ncol)
