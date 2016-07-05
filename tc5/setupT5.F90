@@ -10,15 +10,12 @@ subroutine setupT5(nfile,atm,ierr)
     type(Matrix)        		  :: nodes,work 
     type(Matrix)	    		  ::  x,y,z,x2,xy,y2,xz,z2,yz,r2,id
     real(kind=8)         		  :: pi
-	integer							:: ista1,iend1
     nodes=nfile
 
  	x=dm_getcol(nodes,0)
  	y=dm_getcol(nodes,1)
  	z=dm_getcol(nodes,2)
 
-    call MatGetOwnershipRange(Y,ista1,iend1,ierr)
-	print *,"ista1=",ista1,"iend1=",iend1 
 	atm%pts%x=x
     atm%pts%y=y
     atm%pts%z=z
