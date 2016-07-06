@@ -40,7 +40,7 @@ subroutine test_case_5_cart_rk4_fd(nfile,ep,fdsize,order,dim,gamma,dt,tend,ierr)
     	call dm_destroy(d3,ierr)
     	call dm_destroy(d4,ierr)
     enddo
-     call dm_view(H,ierr)    
+    call dm_view(H,ierr)    
     call dm_destroy(gradghm,ierr)	
     call dm_destroy(DPx,ierr)
     call dm_destroy(DPy,ierr)

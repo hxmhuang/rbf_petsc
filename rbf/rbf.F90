@@ -236,19 +236,21 @@ subroutine knnsearch(nn,localx,ierr)
 	integer						:: 	i
     character*100   filename
     
-    !filename="md059.03600"
+    !filename="md164.27225"
+    filename="md059.03600"
     !filename="md019.00400"
 	!filename="md003.00016"
-    filename="md002.00009"
+    !filename="md002.00009"
     call dm_load(filename,.false.,localx,ierr)
   	!localx=dm_getsub(localx, dm_m2n(0,localx%nrow-1, .false.), dm_m2n(0,2,.false.) ) 
   	localx=dm_getsub(localx,(/(i,i=0,localx%nrow-1)/), (/0,1,2/) ) 
 		
-	filename="md002.00009.nn"
+    !filename="md164.27225.fd31.nn"
+	!filename="md002.00009.nn"
     !filename="md003.00016.fd7.nn"
     !filename="md009.00100.fd31.nn"
     !filename="md019.00400.fd31.nn"
-    !filename="md059.03600.fd31.nn"
+    filename="md059.03600.fd31.nn"
     !filename="md059.03600.nn"
     !call dm_load(filename,.true.,nn,ierr)
     call dm_load(filename,.false.,nn,ierr)
