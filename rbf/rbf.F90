@@ -234,26 +234,40 @@ subroutine knnsearch(nn,localx,ierr)
     type(Matrix),	intent(out)	::  localx 
 	integer,		intent(out)	::	ierr
 	integer						:: 	i
-    character*100   filename
-    
-    !filename="md164.27225"
-    filename="md059.03600"
-    !filename="md019.00400"
-	!filename="md003.00016"
-    !filename="md002.00009"
-    call dm_load(filename,.false.,localx,ierr)
+    character*100   			::	filename1,filename2
+  	logical						:: 	alive 
+	
+	filename1="md/md002.00009"
+	!filename1="md/md003.00016"
+    !filename1="md/md019.00400"
+    !filename1="md/md059.03600"
+    !filename1="md/md164.27225"
+	inquire(file=filename1,exist=alive)
+	if(.not. alive) then
+		print *,"Error in knnsearch: the "//trim(filename1)//" is not exitsed."
+		stop
+	endif
+ 
+    call dm_load(filename1,.false.,localx,ierr)
   	!localx=dm_getsub(localx, dm_m2n(0,localx%nrow-1, .false.), dm_m2n(0,2,.false.) ) 
   	localx=dm_getsub(localx,(/(i,i=0,localx%nrow-1)/), (/0,1,2/) ) 
-		
-    !filename="md164.27225.fd31.nn"
-	!filename="md002.00009.nn"
-    !filename="md003.00016.fd7.nn"
-    !filename="md009.00100.fd31.nn"
-    !filename="md019.00400.fd31.nn"
-    filename="md059.03600.fd31.nn"
-    !filename="md059.03600.nn"
+	
+	filename2=trim(filename1)//trim(".nn")
+	print *,"filename2=",filename2	
+	inquire(file=filename2,exist=alive)
+	if(.not. alive) then
+		print *,"Error in knnsearch: the "//trim(filename2)//" is not exitsed."
+		stop
+	endif
+	!filename2="md/md002.00009.nn"
+    !filename2="md/md164.27225.fd31.nn"
+    !filename2="md/md003.00016.fd7.nn"
+    !filename2="md/md009.00100.fd31.nn"
+    !filename2="md/md019.00400.fd31.nn"
+    !filename2="md/md059.03600.fd31.nn"
+    !filename2="md/md059.03600.nn"
     !call dm_load(filename,.true.,nn,ierr)
-    call dm_load(filename,.false.,nn,ierr)
+    call dm_load(filename2,.false.,nn,ierr)
 end subroutine
 
 ! -----------------------------------------------------------------------

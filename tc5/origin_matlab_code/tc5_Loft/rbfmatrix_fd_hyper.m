@@ -29,7 +29,7 @@ A = ones(fdsize+1,fdsize+1); A(end,end) = 0;
 B = zeros(fdsize+1,1);
 
 idx = knnsearch(x,x,'k',fdsize);
-dlmwrite('md164.27225.fd31.nn',idx-1, ' ');
+%dlmwrite('md164.27225.fd31.nn',idx-1, ' ');
 for j=1:N
     
     imat = idx(j,:);
