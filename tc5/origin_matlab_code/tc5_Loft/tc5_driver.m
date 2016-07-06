@@ -9,7 +9,7 @@
 
 clear all
 %fd = 3;    % size of RBF-FD stencil
-fd = 3;    % size of RBF-FD stencil
+fd = 31;    % size of RBF-FD stencil
 
 %tend  = 15; % ending time, needs to be in days
 tend  = 0.125; % ending time, needs to be in days
@@ -50,8 +50,9 @@ dim = 2 ;   % dimension of stencil, on sphere dim=2
 dsply=1; 
 plt=1; 
 
+fname = load('md/md164.27225');
 %fname = load('md/md001.00004');
-fname = load('md/md002.00009');
+%fname = load('md/md002.00009');
 %fname = load('md/md003.00016');
 %fname = load('md/md009.00100');
 
