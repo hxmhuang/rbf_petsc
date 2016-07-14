@@ -9,10 +9,10 @@
 
 clear all
 %fd = 3;    % size of RBF-FD stencil
-fd = 3;    % size of RBF-FD stencil
+fd = 31;    % size of RBF-FD stencil
 
-%tend  = 15; % ending time, needs to be in days
-tend  = 0.125; % ending time, needs to be in days
+tend  = 60; % ending time, needs to be in days
+%tend  = 0.125; % ending time, needs to be in days
 
 order = 4;  % power of Laplacian, L^order
 dim = 2 ;   % dimension of stencil, on sphere dim=2
@@ -34,15 +34,15 @@ dim = 2 ;   % dimension of stencil, on sphere dim=2
 
 % RBF-FD parameters for N = 3600 node set
 %
-% ep = 2; % controls width of Gaussian RBF
-% dt = 1000; % time step, needs to be in seconds
-% gamma = -2.97e-16; % amount of hyperviscosity applied, multiplies Laplacian^order 
+ ep = 2; % controls width of Gaussian RBF
+ dt = 1000; % time step, needs to be in seconds
+ gamma = -2.97e-16; % amount of hyperviscosity applied, multiplies Laplacian^order 
 
  % RBF-FD parameters for N = 6400 node set
 %
- ep = 2.7; % controls width of Gaussian RBF
- dt = 900; % time step, needs to be in seconds
- gamma = -2.98e-17; % amount of hyperviscosity applied, multiplies Laplacian^order 
+% ep = 2.7; % controls width of Gaussian RBF
+% dt = 900; % time step, needs to be in seconds
+% gamma = -2.98e-17; % amount of hyperviscosity applied, multiplies Laplacian^order 
 
 
 % Set to dsply=1 if you want to display the time
@@ -52,12 +52,12 @@ plt=1;
 
 %fname = load('md/md164.27225');
 %fname = load('md/md001.00004');
-fname = load('md/md002.00009');
+%fname = load('md/md002.00009');
 %fname = load('md/md003.00016');
 %fname = load('md/md009.00100');
 
 %fname = load('md/md019.00400');
-%fname = load('md059.03600');
+fname = load('md059.03600');
 
 %fname = load('md079.06400');
 

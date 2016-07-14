@@ -6,8 +6,8 @@ function [uc,gh,us] = computeInitialCondition(atm,t)
 % Extract out the constants from the atm structure to make the code easier
 % to read.
 alpha = atm.alpha; a = atm.a; omega = atm.omega; u0 = atm.u0;
-x = atm.pts.x; 
-y = atm.pts.y; 
+x = atm.pts.x;
+y = atm.pts.y;
 z = atm.pts.z;
 
 gh = - (a*omega*u0+ u0^2/2)*(-x*sin(alpha) + z*cos(alpha)).^2;

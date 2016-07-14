@@ -1,0 +1,223 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+AtmType	atm_type.F90	/^   type AtmType$/;"	t	module:atm_type
+Points	atm_type.F90	/^    type Points$/;"	t	module:atm_type
+a	atm_type.F90	/^        real/;"	k	type:AtmType
+alive	main.F90	/^  	logical				:: 	alive /;"	v	program:main
+alpha	atm_type.F90	/^        real(kind=8) :: alpha$/;"	k	type:AtmType
+atm_destroy	atm_type.F90	/^subroutine atm_destroy(/;"	s	module:atm_type
+atm_type	atm_type.F90	/^module atm_type$/;"	m
+bk_mat_getsub	dm_mat.F90	/^subroutine bk_mat_getsub(/;"	s	module:dm_mat
+bk_mat_vjoin	dm_mat.F90	/^subroutine bk_mat_vjoin(/;"	s	module:dm_mat
+computeInitialCondition	computeInitialCondition.F90	/^subroutine computeInitialCondition(/;"	s
+debug	main.F90	/^    logical         	:: debug$/;"	v	program:main
+dim	main.F90	/^    integer             :: fd,order,dim,/;"	v	program:main
+dm	dm.F90	/^module dm /;"	m
+dm_add1	dm.F90	/^function dm_add1(/;"	f	module:dm
+dm_add2	dm.F90	/^function dm_add2(/;"	f	module:dm
+dm_add3	dm.F90	/^function dm_add3(/;"	f	module:dm
+dm_add4	dm.F90	/^function dm_add4(/;"	f	module:dm
+dm_add5	dm.F90	/^function dm_add5(/;"	f	module:dm
+dm_add6	dm.F90	/^function dm_add6(/;"	f	module:dm
+dm_add7	dm.F90	/^function dm_add7(/;"	f	module:dm
+dm_axpy1	dm.F90	/^subroutine dm_axpy1(/;"	s	module:dm
+dm_axpy2	dm.F90	/^subroutine dm_axpy2(/;"	s	module:dm
+dm_axpy3	dm.F90	/^subroutine dm_axpy3(/;"	s	module:dm
+dm_aypx1	dm.F90	/^subroutine dm_aypx1(/;"	s	module:dm
+dm_aypx2	dm.F90	/^subroutine dm_aypx2(/;"	s	module:dm
+dm_aypx3	dm.F90	/^subroutine dm_aypx3(/;"	s	module:dm
+dm_cart2sph	dm.F90	/^subroutine dm_cart2sph(/;"	s	module:dm
+dm_comm_rank	dm.F90	/^subroutine dm_comm_rank(/;"	s	module:dm
+dm_comm_size	dm.F90	/^subroutine dm_comm_size(/;"	s	module:dm
+dm_constants1	dm.F90	/^function dm_constants1(/;"	f	module:dm
+dm_constants2	dm.F90	/^function dm_constants2(/;"	f	module:dm
+dm_constants3	dm.F90	/^function dm_constants3(/;"	f	module:dm
+dm_copy	dm.F90	/^subroutine dm_copy(/;"	s	module:dm
+dm_create	dm.F90	/^subroutine dm_create(/;"	s	module:dm
+dm_cube	dm.F90	/^function dm_cube(/;"	f	module:dm
+dm_destroy	dm.F90	/^subroutine dm_destroy(/;"	s	module:dm
+dm_ediv	dm.F90	/^function dm_ediv(/;"	f	module:dm
+dm_emult	dm.F90	/^function dm_emult(/;"	f	module:dm
+dm_eq1	dm.F90	/^function dm_eq1(/;"	f	module:dm
+dm_eq2	dm.F90	/^function dm_eq2(/;"	f	module:dm
+dm_eq3	dm.F90	/^function dm_eq3(/;"	f	module:dm
+dm_eq4	dm.F90	/^function dm_eq4(/;"	f	module:dm
+dm_exp	dm.F90	/^function dm_exp(/;"	f	module:dm
+dm_eyes	dm.F90	/^function dm_eyes(/;"	f	module:dm
+dm_finalize	dm.F90	/^subroutine dm_finalize(/;"	s	module:dm
+dm_ge1	dm.F90	/^function dm_ge1(/;"	f	module:dm
+dm_ge2	dm.F90	/^function dm_ge2(/;"	f	module:dm
+dm_ge3	dm.F90	/^function dm_ge3(/;"	f	module:dm
+dm_ge4	dm.F90	/^function dm_ge4(/;"	f	module:dm
+dm_getcol	dm.F90	/^function dm_getcol(/;"	f	module:dm
+dm_getrow	dm.F90	/^function dm_getrow(/;"	f	module:dm
+dm_getsub	dm.F90	/^function dm_getsub(/;"	f	module:dm
+dm_getvalues	dm.F90	/^subroutine dm_getvalues(/;"	s	module:dm
+dm_gt1	dm.F90	/^function dm_gt1(/;"	f	module:dm
+dm_gt2	dm.F90	/^function dm_gt2(/;"	f	module:dm
+dm_gt3	dm.F90	/^function dm_gt3(/;"	f	module:dm
+dm_gt4	dm.F90	/^function dm_gt4(/;"	f	module:dm
+dm_hjoin	dm.F90	/^function dm_hjoin(/;"	f	module:dm
+dm_init	dm.F90	/^subroutine dm_init(/;"	s	module:dm
+dm_le1	dm.F90	/^function dm_le1(/;"	f	module:dm
+dm_le2	dm.F90	/^function dm_le2(/;"	f	module:dm
+dm_le3	dm.F90	/^function dm_le3(/;"	f	module:dm
+dm_le4	dm.F90	/^function dm_le4(/;"	f	module:dm
+dm_load	dm.F90	/^subroutine dm_load(/;"	s	module:dm
+dm_log	dm.F90	/^function dm_log(/;"	f	module:dm
+dm_lt1	dm.F90	/^function dm_lt1(/;"	f	module:dm
+dm_lt2	dm.F90	/^function dm_lt2(/;"	f	module:dm
+dm_lt3	dm.F90	/^function dm_lt3(/;"	f	module:dm
+dm_lt4	dm.F90	/^function dm_lt4(/;"	f	module:dm
+dm_m2n	dm.F90	/^function dm_m2n(/;"	f	module:dm
+dm_mat	dm_mat.F90	/^module dm_mat /;"	m
+dm_minus1	dm.F90	/^function dm_minus1(/;"	f	module:dm
+dm_minus2	dm.F90	/^function dm_minus2(/;"	f	module:dm
+dm_minus3	dm.F90	/^function dm_minus3(/;"	f	module:dm
+dm_minus4	dm.F90	/^function dm_minus4(/;"	f	module:dm
+dm_minus5	dm.F90	/^function dm_minus5(/;"	f	module:dm
+dm_minus6	dm.F90	/^function dm_minus6(/;"	f	module:dm
+dm_minus7	dm.F90	/^function dm_minus7(/;"	f	module:dm
+dm_minus8	dm.F90	/^function dm_minus8(/;"	f	module:dm
+dm_mult1	dm.F90	/^function dm_mult1(/;"	f	module:dm
+dm_mult2	dm.F90	/^function dm_mult2(/;"	f	module:dm
+dm_mult3	dm.F90	/^function dm_mult3(/;"	f	module:dm
+dm_mult4	dm.F90	/^function dm_mult4(/;"	f	module:dm
+dm_mult5	dm.F90	/^function dm_mult5(/;"	f	module:dm
+dm_mult6	dm.F90	/^function dm_mult6(/;"	f	module:dm
+dm_mult7	dm.F90	/^function dm_mult7(/;"	f	module:dm
+dm_norm_1	dm.F90	/^function dm_norm_1(/;"	f	module:dm
+dm_norm_2	dm.F90	/^function dm_norm_2(/;"	f	module:dm
+dm_norm_inf	dm.F90	/^function dm_norm_inf(/;"	f	module:dm
+dm_nq1	dm.F90	/^function dm_nq1(/;"	f	module:dm
+dm_nq2	dm.F90	/^function dm_nq2(/;"	f	module:dm
+dm_nq3	dm.F90	/^function dm_nq3(/;"	f	module:dm
+dm_nq4	dm.F90	/^function dm_nq4(/;"	f	module:dm
+dm_ones	dm.F90	/^function dm_ones(/;"	f	module:dm
+dm_option_bool	dm.F90	/^subroutine dm_option_bool(/;"	s	module:dm
+dm_option_int	dm.F90	/^subroutine dm_option_int(/;"	s	module:dm
+dm_option_real	dm.F90	/^subroutine dm_option_real(/;"	s	module:dm
+dm_printf	dm.F90	/^subroutine dm_printf(/;"	s	module:dm
+dm_rep	dm.F90	/^function dm_rep(/;"	f	module:dm
+dm_seqs	dm.F90	/^function dm_seqs(/;"	f	module:dm
+dm_set_explicit	dm.F90	/^subroutine dm_set_explicit(/;"	s	module:dm
+dm_set_implicit	dm.F90	/^subroutine dm_set_implicit(/;"	s	module:dm
+dm_setcol	dm.F90	/^subroutine dm_setcol(/;"	s	module:dm
+dm_setdiag1	dm.F90	/^subroutine dm_setdiag1(/;"	s	module:dm
+dm_setdiag2	dm.F90	/^subroutine dm_setdiag2(/;"	s	module:dm
+dm_setdiag3	dm.F90	/^subroutine dm_setdiag3(/;"	s	module:dm
+dm_setvalue1	dm.F90	/^subroutine dm_setvalue1(/;"	s	module:dm
+dm_setvalue2	dm.F90	/^subroutine dm_setvalue2(/;"	s	module:dm
+dm_setvalue3	dm.F90	/^subroutine dm_setvalue3(/;"	s	module:dm
+dm_setvalues1	dm.F90	/^subroutine dm_setvalues1(/;"	s	module:dm
+dm_setvalues2	dm.F90	/^subroutine dm_setvalues2(/;"	s	module:dm
+dm_setvalues3	dm.F90	/^subroutine dm_setvalues3(/;"	s	module:dm
+dm_solve	dm.F90	/^function dm_solve(/;"	f	module:dm
+dm_sparse	dm.F90	/^function dm_sparse(/;"	f	module:dm
+dm_sqrt	dm.F90	/^function dm_sqrt(/;"	f	module:dm
+dm_squ	dm.F90	/^function dm_squ(/;"	f	module:dm
+dm_sum	dm.F90	/^function dm_sum(/;"	f	module:dm
+dm_test	dm.F90	/^subroutine dm_test(/;"	s	module:dm
+dm_trans	dm.F90	/^function dm_trans(/;"	f	module:dm
+dm_veyezero	dm.F90	/^function dm_veyezero(/;"	f	module:dm
+dm_view	dm.F90	/^subroutine dm_view(/;"	s	module:dm
+dm_vjoin	dm.F90	/^function dm_vjoin(/;"	f	module:dm
+dm_vzeroeye	dm.F90	/^function dm_vzeroeye(/;"	f	module:dm
+dm_xty	dm.F90	/^function dm_xty(/;"	f	module:dm
+dm_xyt	dm.F90	/^function dm_xyt(/;"	f	module:dm
+dm_zeros	dm.F90	/^function dm_zeros(/;"	f	module:dm
+drbf_guassian	rbf.F90	/^function drbf_guassian(/;"	f
+dt	main.F90	/^    integer             :: fd,order,dim,dt$/;"	v	program:main
+ep	main.F90	/^    real(kind=8)		:: ep,/;"	v	program:main
+evalCartRhs_fd	evalCartRhs_fd.F90	/^subroutine evalCartRhs_fd(/;"	s
+f	atm_type.F90	/^        type(Matrix) :: f /;"	k	type:AtmType
+fd	main.F90	/^    integer             :: fd,/;"	v	program:main
+filename	main.F90	/^    character(len=100) 	:: filename /;"	v	program:main
+fname	main.F90	/^    type(Matrix)        :: fname$/;"	v	program:main
+g	atm_type.F90	/^        real(kind=8) :: g /;"	k	type:AtmType
+gamma	main.F90	/^    real(kind=8)		:: ep,tend,gamma$/;"	v	program:main
+getfilerowcol	dm_mat.F90	/^subroutine getfilerowcol(/;"	s	module:dm_mat
+gh0	atm_type.F90	/^        real(kind=8) :: gh0 /;"	k	type:AtmType
+ghm	atm_type.F90	/^        type(Matrix) :: ghm /;"	k	type:AtmType
+hm0	atm_type.F90	/^        real(kind=8) :: hm0 /;"	k	type:AtmType
+hypre	rbf.F90	/^function hypre(/;"	f
+ierr	main.F90	/^    integer             :: ierr$/;"	v	program:main
+knnsearch	rbf.F90	/^subroutine knnsearch(/;"	s
+la	atm_type.F90	/^        type(Matrix) :: la$/;"	k	type:Points
+lam_c	atm_type.F90	/^        real(kind=8) :: lam_c /;"	k	type:AtmType
+mR	atm_type.F90	/^        real(kind=8) :: mR /;"	k	type:AtmType
+main	main.F90	/^program main /;"	p
+mat_assemble	dm_mat.F90	/^subroutine mat_assemble(/;"	s	module:dm_mat
+mat_axpy	dm_mat.F90	/^subroutine mat_axpy(/;"	s	module:dm_mat
+mat_aypx	dm_mat.F90	/^subroutine mat_aypx(/;"	s	module:dm_mat
+mat_cart2sph	dm_mat.F90	/^subroutine mat_cart2sph(/;"	s	module:dm_mat
+mat_compare	dm_mat.F90	/^subroutine mat_compare(/;"	s	module:dm_mat
+mat_constants	dm_mat.F90	/^subroutine mat_constants(/;"	s	module:dm_mat
+mat_copy	dm_mat.F90	/^subroutine mat_copy(/;"	s	module:dm_mat
+mat_create	dm_mat.F90	/^subroutine mat_create(/;"	s	module:dm_mat
+mat_destroy	dm_mat.F90	/^subroutine mat_destroy(/;"	s	module:dm_mat
+mat_ediv	dm_mat.F90	/^subroutine mat_ediv(/;"	s	module:dm_mat
+mat_emult	dm_mat.F90	/^subroutine mat_emult(/;"	s	module:dm_mat
+mat_eyes	dm_mat.F90	/^subroutine mat_eyes(/;"	s	module:dm_mat
+mat_getownershiprange	dm_mat.F90	/^subroutine mat_getownershiprange(/;"	s	module:dm_mat
+mat_getsize	dm_mat.F90	/^subroutine mat_getsize(/;"	s	module:dm_mat
+mat_getsub	dm_mat.F90	/^subroutine mat_getsub(/;"	s	module:dm_mat
+mat_gettype	dm_mat.F90	/^subroutine mat_gettype(/;"	s	module:dm_mat
+mat_getvalues	dm_mat.F90	/^subroutine mat_getvalues(/;"	s	module:dm_mat
+mat_hjoin	dm_mat.F90	/^subroutine mat_hjoin(/;"	s	module:dm_mat
+mat_load	dm_mat.F90	/^subroutine mat_load(/;"	s	module:dm_mat
+mat_m2n	dm_mat.F90	/^subroutine mat_m2n(/;"	s	module:dm_mat
+mat_mat2is	dm_mat.F90	/^subroutine mat_mat2is(/;"	s	module:dm_mat
+mat_mat2vec	dm_mat.F90	/^subroutine mat_mat2vec(/;"	s	module:dm_mat
+mat_math	dm_mat.F90	/^subroutine mat_math(/;"	s	module:dm_mat
+mat_mult	dm_mat.F90	/^subroutine mat_mult(/;"	s	module:dm_mat
+mat_norm	dm_mat.F90	/^subroutine mat_norm(/;"	s	module:dm_mat
+mat_ones	dm_mat.F90	/^subroutine mat_ones(/;"	s	module:dm_mat
+mat_rep	dm_mat.F90	/^subroutine mat_rep(/;"	s	module:dm_mat
+mat_scale	dm_mat.F90	/^subroutine mat_scale(/;"	s	module:dm_mat
+mat_seqs	dm_mat.F90	/^subroutine mat_seqs(/;"	s	module:dm_mat
+mat_setcol	dm_mat.F90	/^subroutine mat_setcol(/;"	s	module:dm_mat
+mat_setdiag	dm_mat.F90	/^subroutine mat_setdiag(/;"	s	module:dm_mat
+mat_setvalue	dm_mat.F90	/^subroutine mat_setvalue(/;"	s	module:dm_mat
+mat_setvalues	dm_mat.F90	/^subroutine mat_setvalues(/;"	s	module:dm_mat
+mat_solve	dm_mat.F90	/^subroutine mat_solve(/;"	s	module:dm_mat
+mat_sparse	dm_mat.F90	/^subroutine mat_sparse(/;"	s	module:dm_mat
+mat_sum	dm_mat.F90	/^subroutine mat_sum(/;"	s	module:dm_mat
+mat_trans	dm_mat.F90	/^subroutine mat_trans(/;"	s	module:dm_mat
+mat_vec2mat	dm_mat.F90	/^subroutine mat_vec2mat(/;"	s	module:dm_mat
+mat_veyezero	dm_mat.F90	/^subroutine mat_veyezero(/;"	s	module:dm_mat
+mat_view	dm_mat.F90	/^subroutine mat_view(/;"	s	module:dm_mat
+mat_vjoin	dm_mat.F90	/^subroutine mat_vjoin(/;"	s	module:dm_mat
+mat_vzeroeye	dm_mat.F90	/^subroutine mat_vzeroeye(/;"	s	module:dm_mat
+mat_xty	dm_mat.F90	/^subroutine mat_xty(/;"	s	module:dm_mat
+mat_xyt	dm_mat.F90	/^subroutine mat_xyt(/;"	s	module:dm_mat
+mat_zeros	dm_mat.F90	/^subroutine mat_zeros(/;"	s	module:dm_mat
+myrank	main.F90	/^    integer             :: mysize,myrank /;"	v	program:main
+mysize	main.F90	/^    integer             :: mysize,/;"	v	program:main
+omega	atm_type.F90	/^        real(kind=8) :: omega /;"	k	type:AtmType
+order	main.F90	/^    integer             :: fd,order,/;"	v	program:main
+p_u	atm_type.F90	/^        type(Matrix) :: p_u /;"	k	type:Points
+p_v	atm_type.F90	/^        type(Matrix) :: p_v /;"	k	type:Points
+p_w	atm_type.F90	/^        type(Matrix) :: p_w /;"	k	type:Points
+pts	atm_type.F90	/^        type(Points) :: pts$/;"	k	type:AtmType
+r	atm_type.F90	/^        type(Matri/;"	k	type:Points
+rbf_coriolis_force	rbf.F90	/^subroutine rbf_coriolis_force(/;"	s
+rbf_createpoints	rbf.F90	/^subroutine rbf_createpoints(/;"	s
+rbf_distancematrix	rbf.F90	/^subroutine rbf_distancematrix(/;"	s
+rbf_guassian	rbf.F90	/^function rbf_guassian(/;"	f
+rbf_projection	rbf.F90	/^subroutine rbf_projection(/;"	s
+rbf_testfunction	rbf.F90	/^subroutine rbf_testfunction(/;"	s
+rbfmatrix_fd_hypre	rbfmatrix_fd_hypre.F90	/^subroutine rbfmatrix_fd_hypre(/;"	s
+setupT5	setupT5.F90	/^subroutine setupT5(/;"	s
+tend	main.F90	/^    real(kind=8)		:: ep,tend,/;"	v	program:main
+test_case_5_cart_rk4_fd	test_case_5_cart_rk4_fd.F90	/^subroutine test_case_5_cart_rk4_fd(/;"	s
+th	atm_type.F90	/^        type(Matrix) :: th$/;"	k	type:Points
+thm_c	atm_type.F90	/^        real(kind=8) :: thm_c /;"	k	type:AtmType
+u0	atm_type.F90	/^        real(kind=8) :: u0 /;"	k	type:AtmType
+x	atm_type.F90	/^        type(Matrix)/;"	k	type:Points
+y	atm_type.F90	/^        typ/;"	k	type:Points
+z	atm_type.F90	/^        type(Matrix) :: z$/;"	k	type:Points
